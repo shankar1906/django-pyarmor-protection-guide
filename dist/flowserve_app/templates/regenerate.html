@@ -1,0 +1,436 @@
+{% extends 'base_new.html' %}
+{% load static %}
+
+{% block header_title %}Regenerate Report{% endblock %}
+
+{% block extra_css %}
+<style>
+  .regenerate-container {
+    padding: 20px;
+  }
+
+  .form-section {
+    background: white;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+  }
+
+  .form-group {
+    margin-bottom: 20px;
+    position: relative;
+  }
+
+  .form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #333;
+  }
+
+  .form-control {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+
+  .autocomplete-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+    display: none;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  }
+
+  .autocomplete-dropdown.show {
+    display: block;
+  }
+
+  .autocomplete-item {
+    padding: 10px;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  .autocomplete-item:hover {
+    background-color: #f8f9fa;
+  }
+
+  .autocomplete-item:last-child {
+    border-bottom: none;
+  }
+
+  .autocomplete-item.active {
+    background-color: #007bff;
+    color: white;
+  }
+
+  .no-results {
+    padding: 10px;
+    text-align: center;
+    color: #999;
+  }
+
+  .btn-continue {
+    background: #007bff;
+    color: white;
+    padding: 10px 30px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+  }
+
+  .btn-continue:hover {
+    background: #0056b3;
+  }
+
+  .table-section {
+    background: white;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    display: none;
+  }
+
+  .table-section.show {
+    display: block;
+  }
+
+  .btn-download {
+    background: #28a745;
+    color: white;
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+  }
+
+  .btn-download:hover {
+    background: #218838;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="regenerate-container">
+  <div class="form-section">
+    <div class="form-group">
+      <label for="serialNumber">Serial Number</label>
+      <input 
+        type="text" 
+        id="serialNumber" 
+        class="form-control" 
+        placeholder="Type to search serial number..."
+        autocomplete="off"
+      >
+      <div id="autocompleteDropdown" class="autocomplete-dropdown"></div>
+    </div>
+    <button type="button" class="btn-continue" id="btnContinue">Continue</button>
+  </div>
+
+  <div class="table-section" id="tableSection">
+    <h4>Report History</h4>
+    <table class="table table-striped" id="reportTable">
+      <thead>
+        <tr>
+          <th>Serial Number</th>
+          <th>Count ID</th>
+          <th>Date</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="reportTableBody">
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+  let allSerialNumbers = [];
+  let selectedIndex = -1;
+
+  // Load serial numbers on page load
+  loadSerialNumbers();
+
+  // Input field event handlers
+  const $input = $('#serialNumber');
+  const $dropdown = $('#autocompleteDropdown');
+
+  // Input event - filter and show dropdown ONLY when typing
+  $input.on('input', function() {
+    const searchTerm = $(this).val().trim();
+    
+    // Only show dropdown if user has typed something
+    if (searchTerm.length > 0) {
+      filterAndShowDropdown(searchTerm.toLowerCase());
+    } else {
+      $dropdown.removeClass('show');
+      selectedIndex = -1;
+    }
+  });
+
+  // Focus event - do NOT show dropdown automatically
+  $input.on('focus', function() {
+    // Don't show dropdown on focus, only on typing
+  });
+
+  // Keyboard navigation
+  $input.on('keydown', function(e) {
+    const $items = $dropdown.find('.autocomplete-item');
+    
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      selectedIndex = Math.min(selectedIndex + 1, $items.length - 1);
+      updateSelection($items);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      selectedIndex = Math.max(selectedIndex - 1, -1);
+      updateSelection($items);
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (selectedIndex >= 0 && selectedIndex < $items.length) {
+        $items.eq(selectedIndex).click();
+      } else {
+        $('#btnContinue').click();
+      }
+    } else if (e.key === 'Escape') {
+      $dropdown.removeClass('show');
+      selectedIndex = -1;
+    }
+  });
+
+  // Click outside to close dropdown
+  $(document).on('click', function(e) {
+    if (!$(e.target).closest('.form-group').length) {
+      $dropdown.removeClass('show');
+      selectedIndex = -1;
+    }
+  });
+
+  // Continue button click handler
+  $('#btnContinue').on('click', function() {
+    const serialNumber = $input.val().trim();
+    if (!serialNumber) {
+      DialogManager.toast({
+        type: 'error',
+        message: 'Please enter a serial number'
+      });
+      return;
+    }
+    
+    // Check if serial number exists
+    const exists = allSerialNumbers.some(item => 
+      item.serial_number.toLowerCase() === serialNumber.toLowerCase()
+    );
+    
+    if (!exists) {
+      DialogManager.toast({
+        type: 'error',
+        message: 'Serial number not found'
+      });
+      return;
+    }
+    
+    loadReportData(serialNumber);
+    $dropdown.removeClass('show');
+  });
+
+  // Load serial numbers from API
+  function loadSerialNumbers() {
+    $.ajax({
+      url: '/api/regenerate/serial-numbers/',
+      method: 'GET',
+      success: function(response) {
+        console.log('Serial numbers response:', response);
+        if (response.status === 'success') {
+          allSerialNumbers = response.data;
+          console.log('Loaded serial numbers:', allSerialNumbers.length);
+        } else {
+          console.error('Error in response:', response);
+          DialogManager.toast({
+            type: 'error',
+            message: response.message || 'Failed to load serial numbers'
+          });
+        }
+      },
+      error: function(xhr, status, error) {
+        console.error('AJAX error:', status, error);
+        console.error('Response:', xhr.responseText);
+        DialogManager.toast({
+          type: 'error',
+          message: 'Failed to load serial numbers: ' + error
+        });
+      }
+    });
+  }
+
+  // Filter and show dropdown
+  function filterAndShowDropdown(searchTerm) {
+    $dropdown.empty();
+    selectedIndex = -1;
+
+    const filtered = allSerialNumbers.filter(item => 
+      item.serial_number.toLowerCase().includes(searchTerm)
+    );
+
+    if (filtered.length === 0) {
+      $dropdown.html('<div class="no-results">No serial numbers found</div>');
+      $dropdown.addClass('show');
+      return;
+    }
+
+    filtered.forEach(function(item) {
+      const $item = $('<div class="autocomplete-item"></div>')
+        .text(item.serial_number)
+        .on('click', function() {
+          $input.val(item.serial_number);
+          $dropdown.removeClass('show');
+          selectedIndex = -1;
+        });
+      $dropdown.append($item);
+    });
+
+    $dropdown.addClass('show');
+  }
+
+  // Update selection highlight
+  function updateSelection($items) {
+    $items.removeClass('active');
+    if (selectedIndex >= 0 && selectedIndex < $items.length) {
+      const $selected = $items.eq(selectedIndex);
+      $selected.addClass('active');
+      
+      // Scroll into view if needed
+      const dropdown = $dropdown[0];
+      const item = $selected[0];
+      if (item) {
+        const itemTop = item.offsetTop;
+        const itemBottom = itemTop + item.offsetHeight;
+        const dropdownTop = dropdown.scrollTop;
+        const dropdownBottom = dropdownTop + dropdown.clientHeight;
+        
+        if (itemTop < dropdownTop) {
+          dropdown.scrollTop = itemTop;
+        } else if (itemBottom > dropdownBottom) {
+          dropdown.scrollTop = itemBottom - dropdown.clientHeight;
+        }
+      }
+    }
+  }
+
+  // Load report data for selected serial number
+  function loadReportData(serialNumber) {
+    $.ajax({
+      url: '/api/regenerate/reports/',
+      method: 'GET',
+      data: { serial_number: serialNumber },
+      success: function(response) {
+        if (response.status === 'success') {
+          displayReportData(response.data);
+          $('#tableSection').addClass('show');
+        }
+      },
+      error: function(xhr) {
+        DialogManager.toast({
+          type: 'error',
+          message: 'Failed to load report data'
+        });
+      }
+    });
+  }
+
+  // Display report data in table
+  function displayReportData(data) {
+    const tbody = $('#reportTableBody');
+    tbody.empty();
+
+    if (data.length === 0) {
+      tbody.append('<tr><td colspan="4" class="text-center">No reports found</td></tr>');
+      return;
+    }
+
+    data.forEach(function(item) {
+      const row = `
+        <tr>
+          <td>${item.serial_number}</td>
+          <td>${item.id}</td>
+          <td>${item.date}</td>
+          <td>
+            <button class="btn-download" onclick="downloadPDF('${item.serial_number}', ${item.id})">
+              <i class="fas fa-download"></i> Download PDF
+            </button>
+          </td>
+        </tr>
+      `;
+      tbody.append(row);
+    });
+  }
+
+  // Download PDF function
+  window.downloadPDF = function(serialNumber, id) {
+    // Show loader
+    DialogManager.loading('Processing PDF...', 'Please wait');
+    
+    // Make AJAX request to save PDF
+    $.ajax({
+      url: '/api/regenerate/download-pdf/',
+      method: 'GET',
+      data: { 
+        serial_number: serialNumber, 
+        id: id 
+      },
+      success: function(response) {
+        DialogManager.closeLoading();
+        
+        if (response.status === 'success') {
+          DialogManager.toast({
+            type: 'success',
+            message: response.message || 'PDF saved successfully',
+            duration: 4000
+          });
+        } else {
+          DialogManager.toast({
+            type: 'error',
+            message: response.message || 'Failed to save PDF',
+            duration: 4000
+          });
+        }
+      },
+      error: function(xhr) {
+        DialogManager.closeLoading();
+        
+        let errorMsg = 'Failed to save PDF';
+        try {
+          const response = JSON.parse(xhr.responseText);
+          errorMsg = response.message || errorMsg;
+        } catch (e) {
+          // Use default error message
+        }
+        
+        DialogManager.toast({
+          type: 'error',
+          message: errorMsg,
+          duration: 4000
+        });
+      }
+    });
+  };
+});
+</script>
+{% endblock %}

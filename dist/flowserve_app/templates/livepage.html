@@ -1,0 +1,3689 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>LivePage</title>
+  <!-- Offline CSS -->
+  <link href="{% static 'vendor/bootstrap/bootstrap-5.3.3.min.css' %}" rel="stylesheet">
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Offline JS Libraries -->
+  <script src="{% static 'scripts/dialog-manager.js' %}"></script>
+  <script src="{% static 'vendor/chartjs/chart.umd.min.js' %}"></script>
+  <script src="{% static 'vendor/chartjs/chartjs-plugin-annotation.min.js' %}"></script>
+  <script src="{% static 'vendor/chartjs/chartjs-plugin-zoom.min.js' %}"></script>
+  <script src="{% static 'vendor/sweetalert2/sweetalert2.min.js' %}"></script>
+  <link href="{% static 'vendor/sweetalert2/sweetalert2.min.css' %}" rel="stylesheet">
+
+  <link rel="stylesheet" href="{% static 'css/livepage.css' %}">
+
+  <style>
+    body {
+      overflow-x: hidden;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Premium Torque/Actuator Modal Styles */
+    #torqueActuatorModal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.4);
+      /* Lighter backdrop for light theme */
+      backdrop-filter: blur(4px);
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .torque-modal-content {
+      background: #ffffff;
+      /* White Theme */
+      color: #1e293b;
+      width: 95%;
+      max-width: 1200px;
+      height: 95vh;
+      /* Take more height but stay within viewport */
+      border-radius: 8px;
+      border: 1px solid #cbd5e1;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      overflow: hidden;
+      transition: none;
+      /* Removed transition for more "fixed" feel */
+    }
+
+    .torque-modal-header {
+      background: #f8fafc;
+      padding: 10px 20px;
+      border-bottom: 2px solid #dc2626;
+      /* Red accent bottom */
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .torque-modal-header h2 {
+      margin: 0;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #dc2626;
+      /* Red Title */
+    }
+
+    .torque-modal-body {
+      padding: 15px 20px;
+      overflow-y: hidden;
+      /* NO SCROLL */
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .torque-section-title {
+      background: #dc2626;
+      /* Corporate Red */
+      padding: 6px 12px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      border-radius: 2px;
+      margin-bottom: 10px;
+      color: #ffffff;
+      /* Pure White */
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .form-group label {
+      font-size: 0.75rem;
+      color: #334155;
+      /* Dark labels for light theme */
+      font-weight: 700;
+      margin-bottom: 2px;
+    }
+
+    .form-group input,
+    .form-group select {
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      color: #0f172a;
+      padding: 6px 10px;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      transition: all 0.2s;
+      width: 100%;
+      /* Ensure full width for dropdowns */
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: #dc2626;
+      background: #fff;
+    }
+
+    .torque-grid-container {
+      margin-bottom: 15px;
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .torque-grid-table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+
+    .torque-grid-table th {
+      background: #f1f5f9;
+      color: #1e293b;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 6px 4px;
+      text-align: center;
+      border-bottom: 1px solid #cbd5e1;
+      border-right: 1px solid #cbd5e1;
+    }
+
+    .torque-grid-table td {
+      padding: 0;
+      border-bottom: 1px solid #cbd5e1;
+      border-right: 1px solid #cbd5e1;
+    }
+
+    .torque-grid-table input {
+      width: 100%;
+      background: #fff;
+      border: none;
+      color: #000;
+      text-align: center;
+      padding: 8px 4px;
+      font-size: 0.8rem;
+    }
+
+    .torque-grid-table input:focus {
+      outline: none;
+      background: #fef2f2;
+      /* Light red focus */
+    }
+
+    .torque-modal-footer {
+      padding: 10px 20px;
+      background: #f8fafc;
+      border-top: 1px solid #cbd5e1;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .btn-save {
+      background: #dc2626;
+      /* Red primary */
+      color: #fff;
+      border: none;
+      padding: 8px 20px;
+      border-radius: 4px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-save:hover {
+      background: #b91c1c;
+    }
+
+    .btn-cancel {
+      background: #cbd5e1;
+      color: #1e293b;
+      border: none;
+      padding: 8px 20px;
+      border-radius: 4px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-cancel:hover {
+      background: #94a3b8;
+    }
+
+    .dataloger-btn {
+      background: #dc2626;
+      color: #fff;
+      border: none;
+      padding: 8px;
+      border-radius: 4px;
+      font-weight: 700;
+      text-transform: uppercase;
+      cursor: pointer;
+      width: fit-content;
+      margin-bottom: 10px;
+      font-size: 0.75rem;
+      align-self: flex-start;
+    }
+
+    /* ======== Premium Gauge Card Styles ======== */
+    .demo-gauge-card {
+      background: #1e1e1e;
+      background: linear-gradient(145deg, #252525, #1a1a1a);
+      border-radius: 10px;
+      padding: 6px 8px 4px;
+      display: flex;
+      flex-direction: column;
+      color: #ffffff;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+      height: 300px;
+      border: 1px solid #333;
+    }
+
+    .demo-card-header {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 11px;
+      font-weight: 900;
+      margin-bottom: 2px;
+      color: #ffcc00;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 2px 0;
+    }
+
+    .c-title {
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .c-sn {
+      color: #ffcc00;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .c-status {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #28a745;
+    }
+
+    .demo-gauge-wrap {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .demo-gauge-wrap canvas {
+      display: block;
+      max-width: 100%;
+      max-height: 100%;
+    }
+
+    .demo-card-footer {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 15px;
+      background: rgba(0, 0, 0, 0.4);
+      padding: 10px;
+      border-radius: 4px;
+      border: 1px solid #444;
+    }
+
+    .f-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex: 1;
+    }
+
+    .f-item:first-child {
+      border-right: 1px solid #444;
+    }
+
+    .f-label {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      color: #94a3b8;
+      margin-bottom: 2px;
+      font-weight: 600;
+    }
+
+    .f-value {
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: #fff;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Test Button Status Colors */
+    .test-running {
+      background-color: #ff9800 !important;
+      /* Orange - test in progress */
+      border-color: #ff9800 !important;
+      color: white !important;
+    }
+
+    .test-pass {
+      background-color: #28a745 !important;
+      /* Green - test passed */
+      border-color: #28a745 !important;
+      color: white !important;
+    }
+
+    .test-fail {
+      background-color: #dc3545 !important;
+      /* Red - test failed */
+      border-color: #dc3545 !important;
+      color: white !important;
+    }
+
+    .active-test-btn {
+      box-shadow: 0 0 0 0.2rem rgba(255, 152, 0, 0.5);
+    }
+  </style>
+
+</head>
+
+<body>
+  <!-- Top Section (Black Bar) -->
+  <div class="station-live">
+    <div class="d-flex justify-content-between align-items-center px-2 py-1">
+      <div class="d-flex flex-wrap gap-2 align-items-center">
+        <button class="btn btn-sm btn-primary btn-home" id="go-home">
+          <i class="fas fa-home"></i>
+        </button>
+        <!--         
+        <div class="d-flex align-items-center justify-content-center gap-2 px-3 py-1 rounded text-center" style="background-color: rgb(19, 19, 124); font-size: 0.9rem; font-weight: 500;">
+          <i class="fas fa-clock" style="color: white;"></i>
+          <span id="current-time" style="color: white; min-width: 100px;">--:--:-- --</span>
+        </div>
+        
+        <i class="fas fa-moon" id="theme-toggle" style="color: #000000; font-size: 1.5rem; cursor: pointer;" title="Toggle Dark/Light Mode"></i> -->
+
+        <button class="btn btn-sm btn-primary btn" id="station-1" style="display: none;">STATION 1</button>
+      </div>
+      <div class="d-flex flex-wrap gap-2 station-live-buttons" id="station-live-container" data-station="1">
+        <!-- Dynamic buttons will be placed here -->
+        <!-- <button class="btn reset-btn" onclick="resetStation(currentStation)">RESET</button> -->
+        <button class="btn cycle-complete" id="26"
+          onclick="cycleComplete(currentStation, stationState[currentStation].valveSerial)">CYCLE COMPLETE</button>
+      </div>
+    </div>
+    <div class="row flex-grow-0 m-0">
+
+      <!-- Left -->
+      <div class="col-12 py-1 px-4 d-flex align-items-center justify-content-between"
+        style="border-bottom: 1px solid #e2e8f0; background: #f8fafc;">
+        <!-- Brand Left -->
+        <div class="d-flex align-items-center brand-logos" style="width: 150px;">
+          <img src="{% static 'images/icons/flowserve_logo.png' %}" alt="Flowserve Logo"
+            style="height: 30px; object-fit: contain;">
+        </div>
+
+        <!-- Dynamic Grid Center -->
+        <div class="flex-grow-1 px-2 info-row-container">
+          <div class="row g-1 justify-content-center">
+            <!-- Information Row -->
+            <div class="col">
+              <div class="fixed-card-1">
+                <span>Valve Type</span>
+                <span id="valve-type-1" class="value">-</span>
+              </div>
+            </div>
+            <div class="col">
+              <div class="fixed-card-1">
+                <span>Valve Size & class</span>
+                <span id="valve-size-1" class="value">-</span>
+              </div>
+            </div>
+            <div class="col">
+              <div class="fixed-card-1">
+                <span>Body Material</span>
+                <span id="material-1" class="value">-</span>
+              </div>
+            </div>
+            <div class="col">
+              <div class="fixed-card-1">
+                <span>Valve Serial Number</span>
+                <span id="serial-no-1" class="value">-</span>
+              </div>
+            </div>
+            <div class="col">
+              <div class="fixed-card-1">
+                <span>Machine Mode</span>
+                <span id="mode-1" style="color: #22c55e;" class="value">Unknown</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Brand Right -->
+        <div class="d-flex align-items-center justify-content-end brand-logos" style="width: 150px;">
+          <img src="{% static 'images/og-logo.png' %}" alt="Flowserve Logo" style="height: 30px; object-fit: contain;">
+        </div>
+      </div>
+    </div>
+
+    <!-- Status Bar (Horizontal Bar below header) -->
+    <div class="status-bar container-fluid px-0 m-0">
+      <div class="row g-0 m-0 text-center">
+        <div class="col status-item">
+          <span class="status-label">Set Pressure : </span>
+          <span class="status-value" id="set-psr-top-1">0</span>
+        </div>
+        <div class="col status-item">
+          <span class="status-label">Set Time : </span>
+          <span class="status-value" id="set-dur-top-1">0</span>
+        </div>
+        <div class="col status-item">
+          <span class="status-label">Actual Pressure : </span>
+          <span class="status-value" id="act-psr-top-1">0</span>
+        </div>
+        <div class="col status-item">
+          <span class="status-label">Actual Time : </span>
+          <span class="status-value" id="act-dur-top-1">0</span>
+        </div>
+        <div class="col status-item">
+          <span class="status-label">Pressure Unit : </span>
+          <span class="status-value" id="pressure-unit-top-1"></span>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Mid Section -->
+  <!-- Gauge and Chart Section -->
+  <div class="container-fluid px-1 py-1">
+    <!-- Top Row: Gauges and Parameters -->
+    <div class="row g-2 mb-2 justify-content-center">
+      <!-- Left: Set Pressure Gauge -->
+      <div class="col-lg-4 col-md-6">
+        <div class="demo-gauge-card" style="background: #222222;">
+          <div class="demo-card-header">
+            <span class="c-title">Set Pressure <span id="set-psr-gauge-unit-1"
+                style="font-size: 0.75rem; color: #ffffff;"></span></span>
+            <!-- <span class="c-sn" id="SN_1">SN : </span>
+              <span class="c-status" id="status_1"></span> -->
+          </div>
+          <div class="demo-gauge-wrap">
+            <canvas id="gaugeCanvas1"></canvas>
+          </div>
+          <!-- <div class="demo-card-footer">
+              <div class="f-item">
+                <span class="f-label">Set Point</span>
+                <span class="f-value" id="set-psr-display-1">0.0</span>
+              </div>
+              <div class="f-item">
+                <span class="f-label">Valve Status</span>
+                <span class="f-value" id="valve_status_s1">N/A</span>
+              </div>
+            </div> -->
+        </div>
+      </div>
+
+      <!-- Center: Actual Pressure Gauge -->
+      <div class="col-lg-4 col-md-6">
+        <div class="demo-gauge-card" style="background: #222222;">
+          <div class="demo-card-header">
+            <span class="c-title">Actual Pressure <span id="act-psr-gauge-unit-1"
+                style="font-size: 0.75rem; color: #ffffff;"></span></span>
+            <!-- <span class="c-sn" id="SN_2">SN : </span>
+              <span class="c-status" id="status_2"></span> -->
+          </div>
+          <div class="demo-gauge-wrap">
+            <canvas id="gaugeCanvas2"></canvas>
+          </div>
+          <!-- <div class="demo-card-footer">
+              <div class="f-item">
+                <span class="f-label" id="pressure-label-s1">Result Pressure</span>
+                <span class="f-value" id="result_pressure_s1">0.0</span>
+              </div>
+              <div class="f-item">
+                <span class="f-label">Station</span>
+                <span class="f-value">S1</span>
+              </div>
+            </div> -->
+        </div>
+      </div>
+
+      <div class="col-lg-4 col-md-12">
+        <div class="demo-gauge-card" style="background: #222222;">
+          <div class="demo-card-header mb-1">
+            <span class="c-title">Test Info</span>
+          </div>
+          <div class="d-flex flex-column justify-content-center flex-grow-1 mt-1 gap-2">
+            <!-- Row 1: Start Info -->
+            <div class="row g-2 align-items-center border-bottom border-secondary-subtle pb-1">
+              <div class="col-6 d-flex justify-content-between align-items-center">
+                <span class="f-label" style="font-weight: 800;">Start Time</span>
+                <span class="f-value" style="font-size: 0.95rem;"><span id="start-time-1">0</span> <span
+                    style="font-size: 0.75rem; color: #94a3b8;">Sec</span></span>
+              </div>
+              <div
+                class="col-6 d-flex justify-content-between align-items-center border-start border-secondary-subtle ps-3">
+                <span class="f-label" style="font-weight: 800;">End Time</span>
+                <span class="f-value" style="font-size: 0.95rem;"><span id="stop-time-1">0</span> <span
+                    style="font-size: 0.75rem; color: #94a3b8;">Sec</span></span>
+              </div>
+
+            </div>
+            <!-- Row 2: End Info -->
+            <div class="row g-2 align-items-center border-bottom border-secondary-subtle pb-1">
+
+              <div class="col-6 d-flex justify-content-between align-items-center">
+                <span class="f-label" style="font-weight: 800;">Start Pressure</span>
+                <span class="f-value" style="font-size: 0.95rem;"><span id="start-psr-1">0</span> <span
+                    id="start-psr-unit-1" style="font-size: 0.75rem; color: #94a3b8;"></span></span>
+              </div>
+              <div
+                class="col-6 d-flex justify-content-between align-items-center border-start border-secondary-subtle ps-3">
+                <span class="f-label" style="font-weight: 800;">End Pressure</span>
+                <span class="f-value" style="font-size: 0.95rem;"><span id="end-psr-1">0</span> <span
+                    id="end-psr-unit-1" style="font-size: 0.75rem; color: #94a3b8;"></span></span>
+              </div>
+            </div>
+            <!-- Row 3: Current Test and Valve Status (Same Line) -->
+            <div class="row g-2 align-items-center mt-2">
+              <div class="col-6 d-flex flex-column align-items-center justify-content-center">
+                <span class="f-label mb-1"
+                  style="font-weight: 700; font-size: 0.65rem; color: #94a3b8; letter-spacing: 0.8px;">CURRENT
+                  TEST</span>
+                <span class="f-value" id="current-test-name-1"
+                  style="font-size: 1.3rem; color: #ffffff; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px;">-</span>
+              </div>
+              <div
+                class="col-6 d-flex flex-column align-items-center justify-content-center border-start border-secondary-subtle">
+                <span class="f-label mb-1"
+                  style="font-weight: 700; font-size: 0.65rem; color: #94a3b8; letter-spacing: 0.8px;">VALVE
+                  STATUS</span>
+                <span class="f-value" id="valve_status_s1"
+                  style="font-size: 1.3rem; color: #ffcc00; font-weight: 900; text-shadow: 0 0 10px rgba(255,204,0,0.2);">N/A</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Row: Chart -->
+    <div class="row g-2">
+      <div class="col-12">
+        <div class="card text-center shadow-sm live-section" id="station-1-chart"
+          style="min-height: 325px; background-color: #222222; border: 1px solid #444;">
+          <div class="chart-wrapper">
+            <canvas id="pressureChart-1"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Old Info Cards (Commented) -->
+  <!-- 
+      <div class="col-4 p-2 d-flex flex-column gap-2 card-container">
+        <div class="row g-2">
+          <div class="col-6">
+            <div class="card text-center shadow-sm fixed-card set-card">
+              <div class="label">SET PRESSURE</div>
+              <div class="value-group">
+                <div class="value" id="set-psr-1">0</div>
+                <div class="unit psr">unit</div>
+              </div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="card p-2 text-center shadow-sm fixed-card act-card">
+              <div class="label">ACTUAL PRESSURE</div>
+              <div class="value-group">
+                <div class="value" id="act-psr-1">0</div>
+                <div class="unit psr">unit</div>
+              </div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="card p-2 text-center shadow-sm fixed-card set-card">
+              <div class="label">SET DURATION</div>
+              <div class="value-group">
+                <div class="value" id="set-dur-1">0</div>
+                <div class="unit dur">SECS</div>
+              </div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="card p-2 text-center shadow-sm fixed-card act-card">
+              <div class="label">ACTUAL DURATION</div>
+              <div class="value-group">
+                <div class="value" id="act-dur-1">0</div>
+                <div class="unit dur">SECS</div>
+              </div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="card p-2 text-center shadow-sm fixed-card act-card">
+              <div class="label">START PRESSURE</div>
+              <div class="value-group">
+                <div class="value" id="start-psr-1">0</div>
+                <div class="unit psr">unit</div>
+              </div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="card p-2 text-center shadow-sm fixed-card act-card">
+              <div class="label">END PRESSURE</div>
+              <div class="value-group">
+                <div class="value" id="end-psr-1">0</div>
+                <div class="unit psr">unit</div>
+              </div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="card p-2 text-center shadow-sm fixed-card set-card">
+              <div class="label">ALLOWED BUBBLES</div>
+              <div class="value-group">
+                <div class="value" id="allowed-bubls-1">0</div>
+                <div class="unit bubbles">BUBBLES</div>
+              </div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="card p-2 text-center shadow-sm fixed-card act-card">
+              <div class="label">ACTUAL BUBBLES</div>
+              <div class="value-group">
+                <div class="value" id="act-bubles-1">0</div>
+                <div class="unit bubbles">BUBBLES</div>
+              </div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="card p-2 text-center shadow-sm fixed-card set-card">
+              <div class="label">SET CLAMPING PRESSURE</div>
+              <div class="value-group">
+                <div class="value" id="set-clamping-1">0</div>
+                <div class="unit psr">unit</div>
+              </div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="card p-2 text-center shadow-sm fixed-card act-card">
+              <div class="label">ACTUAL CLAMPING PRESSURE</div>
+              <div class="value-group">
+                <div class="value" id="act-clamping-1">0</div>
+                <div class="unit psr">unit</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div> 
+      -->
+  </div>
+
+  </div>
+  </div>
+  </div>
+
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+
+      chekc_hmi_abrs_connection();
+      station_live();
+      updateCurrentTime(); // Initialize time display
+      setInterval(updateCurrentTime, 1000); // Update every second
+      initializeThemeToggle(); // Initialize theme toggle
+
+      const lastStation =
+        Number(localStorage.getItem("lastActiveStation")) || 1;
+    });
+
+    // Function to update current time display
+    function updateCurrentTime() {
+      const now = new Date();
+      let hours = now.getHours();
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+
+      // Determine AM/PM
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+
+      // Convert to 12-hour format
+      hours = hours % 12;
+      hours = hours ? hours : 12; // 0 should be 12
+      const hoursStr = String(hours).padStart(2, '0');
+
+      const timeString = `${hoursStr}:${minutes}:${seconds} ${ampm}`;
+
+      const timeElement = document.getElementById('current-time');
+      if (timeElement) {
+        timeElement.textContent = timeString;
+      }
+    }
+
+    // Theme toggle functionality
+    function initializeThemeToggle() {
+      const themeToggle = document.getElementById('theme-toggle');
+
+      // Check if theme toggle element exists
+      if (!themeToggle) {
+        console.log('Theme toggle element not found, skipping initialization');
+        return;
+      }
+
+      const body = document.body;
+
+      // Check for saved theme preference or default to light mode
+      const currentTheme = localStorage.getItem('theme') || 'light';
+
+      // Apply saved theme
+      if (currentTheme === 'dark') {
+        body.style.backgroundColor = '#1a1a1a';
+        themeToggle.className = 'fas fa-sun';
+        themeToggle.style.color = '#ff8c00'; // Orange for sun (light mode icon)
+      } else {
+        body.style.backgroundColor = '#ffffff';
+        themeToggle.className = 'fas fa-moon';
+        themeToggle.style.color = '#000000'; // Black for moon (dark mode icon)
+      }
+
+      // Toggle theme on icon click
+      themeToggle.addEventListener('click', () => {
+        if (body.style.backgroundColor === 'rgb(26, 26, 26)' || body.style.backgroundColor === '#1a1a1a') {
+          // Switch to light mode
+          body.style.backgroundColor = '#ffffff';
+          themeToggle.className = 'fas fa-moon';
+          themeToggle.style.color = '#000000'; // Black for moon
+          localStorage.setItem('theme', 'light');
+        } else {
+          // Switch to dark mode
+          body.style.backgroundColor = '#1a1a1a';
+          themeToggle.className = 'fas fa-sun';
+          themeToggle.style.color = '#ff8c00'; // Orange for sun
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+    }
+
+    document.getElementById("go-home").addEventListener("click", () => {
+      window.location.href = "/dashboard/";
+
+    });
+
+
+
+    async function chekc_hmi_abrs_connection() {
+      try {
+        // const response = await fetch('/api/check_abrs_hmi_connection/');
+        const response = await fetch('/api/user_config/get_hmi_abrs/');
+
+        const data = await response.json();
+        console.log("hmi connection", data)
+
+
+        updateStatus("hmi-circle", data.hmi_connection);
+
+
+      } catch (error) {
+        console.error("Connection check failed", error);
+        updateStatus("hmi-circle", false);
+      }
+    }
+
+    setInterval(chekc_hmi_abrs_connection, 3000);
+
+    function normalizeBool(value) {
+      return value === true || value === 1 || value === "1";
+    }
+
+    let alertInterval = {};
+
+    function updateStatus(elementId, status) {
+      const el = document.getElementById(elementId);
+      if (!el) return;
+
+      const isConnected = normalizeBool(status);
+
+      if (!isConnected) {
+        el.classList.add("disconnected");
+
+        //ALERT ONLY FOR HMI
+        if (elementId === "hmi-circle") {
+          if (!alertInterval[elementId]) {
+            alertInterval[elementId] = setInterval(() => {
+              alert("HMI NOT CONNECTED");
+            }, 3000);
+          }
+        }
+
+      } else {
+        el.classList.remove("disconnected");
+
+        // stop alert if it was running
+        if (alertInterval[elementId]) {
+          clearInterval(alertInterval[elementId]);
+          alertInterval[elementId] = null;
+        }
+      }
+    }
+
+    function updateStationLabel(id, stationNum, text) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.textContent = text;
+    }
+
+    function updateStationValue(baseId, stationNum, value) {
+      console.log(`updateStationValue called: ${baseId}, station ${stationNum}, value: ${value}`);
+
+      // Handle standard ID patterns (e.g., set-psr-1)
+      const elements = document.querySelectorAll(`[id^="${baseId}-${stationNum}"]`);
+
+      elements.forEach(el => {
+        el.textContent = value ?? "-";
+        el.classList.remove("d-none");
+      });
+
+      // Special case for our new top-row IDs if they don't match the standard pattern
+      const topRowElement = document.getElementById(`${baseId}-top-${stationNum}`);
+      if (topRowElement) {
+        topRowElement.textContent = value ?? "-";
+      }
+    }
+
+
+
+    let activeStation = null;
+    let stationModeValues = {}; // Store mode values for each station
+
+    function activateStation(stationNum) {
+      activeStation = stationNum;
+      setActiveStationUI(stationNum);
+    }
+
+    // Function to update mode display for a specific station
+    function updateStationMode(stationNum) {
+      if (stationModeValues[stationNum]) {
+        updateStationValue("mode", stationNum, stationModeValues[stationNum]);
+      }
+    }
+
+
+
+    function setActiveStationUI(activeStation) {
+      // Only handle station 1
+      if (activeStation !== 1) return;
+      const inactive = 2;
+
+      const baseIds = [
+        "valve-type", "mode",
+        "test-name",
+        "serial-no", "valve-size", "material", "operator",
+        "leak-psr",
+        "set-psr", "act-psr",
+        "set-dur", "act-dur",
+        "start-psr", "end-psr",
+        "allowed-bubls", "act-bubles",
+        "set-clamping", "act-clamping",
+        "set-degree", "act-degree",
+        "set-torque", "act-torque",
+      ];
+
+      baseIds.forEach(id => {
+        document.getElementById(`${id}-${activeStation}`)?.classList.remove("d-none");
+        document.getElementById(`${id}-${inactive}`)?.classList.add("d-none");
+      });
+    }
+
+
+
+    function switchStationChartUI(stationNum) {
+      const s1 = document.getElementById("station-1-chart");
+
+      if (!s1) return;
+
+      // Only show station 1 chart
+      if (stationNum === 1) {
+        s1.classList.remove("d-none");
+      } else {
+        s1.classList.add("d-none");
+      }
+    }
+
+
+    const cycleBtn = document.getElementById("26");
+
+    cycleBtn.addEventListener("click", () => {
+      const stationNum = currentStation;
+
+      const test = stationState[stationNum]?.currentTest;
+
+      if (!test?.valveSerial) {
+        alert("No active test found for this station");
+        return;
+      }
+
+      cycleComplete(stationNum, test.valveSerial);
+    });
+
+
+    async function station_live() {
+      try {
+        const response = await fetch("/api/check_status/");
+        const data = await response.json();
+
+        if (data.status !== "success") return;
+
+        const liveStations = {
+          1: data.station1_status
+        };
+
+        const stationModes = {
+          1: data.s1_test_mode
+        };
+
+        const savedStation = Number(localStorage.getItem("lastActiveStation"));
+        let activeStation = null;
+
+        //Decide active station FIRST - ONLY STATION 1
+        if (liveStations[1] === "enabled") {
+          activeStation = 1;
+        } else {
+          activeStation = null; // Only allow station 1
+        }
+
+        //If NO active station → DASHBOARD
+        if (!activeStation) {
+          console.log("No active stations → dashboard");
+          window.location.replace("/dashboard/");
+          return;
+        }
+
+        //Switch immediately (AUTO)
+        await switch_station(activeStation, { auto: true });
+
+
+        // AUTO / MANUAL MODE HANDLING - ONLY STATION 1
+        function resolveTestMode(stationNum) {
+          const isEnabled = liveStations[stationNum] === "enabled";
+          const isAuto = stationModes[stationNum] === 0;
+
+          return (isEnabled && isAuto) ? "auto" : "manual";
+        }
+
+        // Store modes for station 1 only
+        const mode = resolveTestMode(1);
+        stationModeValues[1] = mode; // Store in global variable
+
+        console.log("Mode detection debug:", {
+          stationNum: 1,
+          liveStations: liveStations,
+          stationModes: stationModes,
+          isEnabled: liveStations[1] === "enabled",
+          rawStationMode: stationModes[1],
+          isAuto: stationModes[1] === 0,
+          resolvedMode: mode
+        });
+
+        // Manage reset button based on mode
+        manageResetButton(1);
+
+        if (mode === "auto") {
+          startAutoPolling(1);
+          setTestButtonsDisabled(1, true);
+        } else {
+          stopAutoPolling(1);
+        }
+
+        // Update mode display ONLY for station 1
+        if (activeStation === 1 && stationModeValues[1]) {
+          updateStationValue("mode", 1, stationModeValues[1]);
+        }
+
+        // Start continuous mode polling for station 1
+        startModePolling(1);
+
+        //NOW render buttons - ONLY STATION 1
+        const stationNum = 1; // Only handle station 1
+        const btn = document.getElementById(`station-${stationNum}`);
+        const status = liveStations[stationNum];
+
+        btn.onclick = null;
+        btn.disabled = false;
+
+        if (status === "enabled") {
+          // btn.textContent = `STATION ${stationNum} (LIVE)`;
+          btn.textContent = `STATION (LIVE)`;
+          btn.style.backgroundColor = "#ffffff";
+          btn.style.color = "#000000";
+
+          // IMPORTANT: wrap stationNum in a closure so values never collapse
+          btn.onclick = (() => {
+            const fixedStation = stationNum;
+
+            return async () => {
+              //Show loader immediately
+              if (currentStation === fixedStation) {
+                console.log("Already on station", fixedStation);
+                return;
+              }
+              DialogManager.loading(`Switching Station ${fixedStation}`, `Loading Station...`);
+
+              try {
+                //Wait for station switch to complete
+                await switch_station(fixedStation);
+              } catch (err) {
+                console.error("Station switch failed:", err);
+              } finally {
+                //Close loader after switch completes
+                DialogManager.closeLoading();
+              }
+            };
+          })();
+        } else {
+          btn.textContent = `STATION ${stationNum} FORM`;
+          btn.style.backgroundColor = "#ffffff";
+          btn.style.color = "#000000";
+
+          btn.onclick = () => {
+            localStorage.setItem("openedFromLive", "true");
+            localStorage.setItem("lockedStation", stationNum);
+            // Open in same tab instead of new tab to avoid confusion
+            window.location.href = `/form?station=${stationNum}`;
+          };
+        }
+
+      }
+      catch (err) {
+        console.error("station_live error:", err);
+      }
+    }
+
+
+    /* ============================================================
+       CONTINUOUS MODE POLLING - Monitors TEST MODE changes
+       ============================================================ */
+
+    let modePollingInterval = null;
+
+    function startModePolling(stationNum) {
+      // Clear any existing interval
+      if (modePollingInterval) {
+        clearInterval(modePollingInterval);
+      }
+
+      console.log(`[MODE POLLING] Started for station ${stationNum}`);
+
+      // Poll every 2 seconds
+      modePollingInterval = setInterval(async () => {
+        try {
+          const res = await fetch(`/api/get_test_mode/${stationNum}/`);
+          const data = await res.json();
+
+          if (data.status === 'success' && data.test_mode !== undefined) {
+            const newMode = (data.test_mode === 0) ? "auto" : "manual";
+            const oldMode = stationModeValues[stationNum];
+
+            if (newMode !== oldMode) {
+              console.log(`[MODE POLLING] Mode changed: ${oldMode} → ${newMode}`);
+              stationModeValues[stationNum] = newMode;
+              updateStationValue("mode", stationNum, newMode);
+
+              // Update auto polling based on new mode
+              if (newMode === "auto") {
+                console.log(`[MODE POLLING] Switching to AUTO mode`);
+                startAutoPolling(stationNum);
+                setTestButtonsDisabled(true);
+              } else {
+                console.log(`[MODE POLLING] Switching to MANUAL mode`);
+                stopAutoPolling(stationNum);
+                setTestButtonsDisabled(false);
+              }
+
+              // Update reset button visibility
+              manageResetButton(stationNum);
+            }
+          }
+        } catch (err) {
+          console.error(`[MODE POLLING] Error:`, err);
+        }
+      }, 2000);
+    }
+
+    function stopModePolling() {
+      if (modePollingInterval) {
+        clearInterval(modePollingInterval);
+        modePollingInterval = null;
+        console.log(`[MODE POLLING] Stopped`);
+      }
+    }
+
+
+    /* ============================================================
+       AUTO POLLER – FINAL VERSION
+       ============================================================ */
+
+    /* Active polling timers */
+    const autoPollers = {};           // { stationNum: intervalId }
+
+    /* Last known HMI state */
+    const lastAutoState = {};         // { stationNum: { testId, cycleComplete } }
+
+    /* Currently running AUTO test */
+    const autoRunningTest = {};       // { stationNum: testId }
+
+
+    /* ------------------------------------------------------------
+       START AUTO POLLING FOR A STATION
+    ------------------------------------------------------------ */
+    function startAutoPolling(stationNum) {
+
+      if (autoPollers[stationNum]) return; // already running
+
+      console.log(`[AUTO] Polling started → Station ${stationNum}`);
+
+      autoPollers[stationNum] = setInterval(async () => {
+        try {
+          const res = await fetch(`/api/auto_station_action/${stationNum}/`);
+          const data = await res.json();
+
+          /* MANUAL MODE → ignore */
+          if (data.machine_mode !== 0) return;
+
+          const prev = lastAutoState[stationNum] || {};
+
+          /* ---------------------------
+             TEST CHANGE DETECTED
+          --------------------------- */
+          if (data.test_changed && data.test_id) {
+
+            // prevent duplicate start
+            if (autoRunningTest[stationNum] === data.test_id) return;
+
+            console.log(`[AUTO] Station ${stationNum} → Test ${data.test_id}`);
+
+            autoRunningTest[stationNum] = data.test_id;
+
+
+            /* Load station initial state */
+            await switch_station(stationNum, { auto: true });
+
+            /* Start test like manual click */
+            await startTestFlowByTestId(stationNum, data.test_id);
+          }
+
+          /* ---------------------------
+             CYCLE COMPLETE DETECTED
+          --------------------------- */
+          if (data.cycle_complete && !prev.cycleComplete) {
+            console.log(`[AUTO] Cycle complete → Station ${stationNum}`);
+
+            // reset AUTO running test
+            delete autoRunningTest[stationNum];
+
+            // optional: stop graph / submit data
+            // stopLiveGraph(stationNum);
+          }
+
+          lastAutoState[stationNum] = {
+            testId: data.test_id,
+            cycleComplete: data.cycle_complete
+          };
+
+        } catch (err) {
+          console.error(`[AUTO] Polling failed → Station ${stationNum}`, err);
+        }
+      }, 2000); // polling interval
+    }
+
+
+    /* ------------------------------------------------------------
+       STOP AUTO POLLING
+    ------------------------------------------------------------ */
+    function stopAutoPolling(stationNum) {
+
+      if (autoPollers[stationNum]) {
+        clearInterval(autoPollers[stationNum]);
+        delete autoPollers[stationNum];
+        delete lastAutoState[stationNum];
+        delete autoRunningTest[stationNum];
+
+        console.log(`[AUTO] Polling stopped → Station ${stationNum}`);
+      }
+    }
+
+
+
+    let currentStation = null;
+
+    async function switch_station(stationNum, { auto = false } = {}) {
+      // Only allow station 1
+      if (stationNum !== 1) {
+        console.log("Only Station 1 is allowed");
+        if (auto) {
+          window.location.replace("/dashboard/");
+        }
+        return;
+      }
+
+      // Prevent duplicate switch
+      if (currentStation === stationNum) {
+        console.log("Station already active:", stationNum);
+        return;
+      }
+
+      currentStation = stationNum;
+
+      // Remember selection ONLY when user or auto-select
+      localStorage.setItem("lastActiveStation", stationNum);
+
+      // ---- UI first ----
+      switchStationChartUI(stationNum);
+      const titleEl = document.getElementById("station-title");
+      if (titleEl) {
+        titleEl.textContent = `STATION LIVE`;
+      }
+
+      const container = document.getElementById("station-live-container");
+      if (!container) return;
+
+      container.dataset.station = stationNum;
+
+      setActiveStationUI(stationNum);
+      activateStation(stationNum);
+
+      // Update mode display for this station
+      updateStationMode(stationNum);
+
+      // ---- Data ----
+      clearStationUI(stationNum);
+      await fetchStationValues(stationNum);
+      await get_enabled_test_buttons(stationNum);
+      await restoreStationState(stationNum);
+    }
+
+
+
+    // --- Fetch values from backend ---
+    async function fetchStationValues(stationNum) {
+      try {
+        const response = await fetch(`/api/station_values/${stationNum}`);
+        const data = await response.json();
+
+        if (data.status === "success") {
+
+          console.log("values", data)
+
+          const info = stationNum === 1 ? data.S1_data : data.S1_data;
+          const degreeValue = stationNum === 1 ? info.s1_degree_value : info.s1_degree_value;
+          const torqueValue = stationNum === 1 ? info.s1_torque_value : info.s1_torque_value;
+
+          stationState[stationNum] = stationState[stationNum] || {};
+          stationState[stationNum].valveSerial = info.valve_ser_no;
+          stationState[stationNum].psr_unit = info.psr_unit;
+          stationState[stationNum].valveClass = info.class; // Store valve class for gauge scale
+          stationState[stationNum].degreeValues = degreeValue; // Store degree values
+          stationState[stationNum].torqueValues = torqueValue; // Store torque values
+
+          updateStationValue("serial-no", stationNum, info.valve_ser_no)
+          updateStationValue("valve-size", stationNum, `${info.size} - ${info.class}`)
+          updateStationValue("material", stationNum, info.body)
+          updateStationValue("valve-type", stationNum, info.type_name)
+          updateStationValue("operator", stationNum, info.testedby)
+          updateStationValue("set-degree", stationNum, `${degreeValue.open_degree} & ${degreeValue.close_degree}`)
+          updateStationLabel("set-degree-label", stationNum, "SET Open & Close Degree");
+          updateStationValue("set-torque", stationNum, `${torqueValue.open_torque} & ${torqueValue.close_torque}`)
+          updateStationLabel("set-torque-label", stationNum, "SET Open & Close Torque");
+
+          document.querySelectorAll(".psr").forEach(el => {
+            el.textContent = info.psr_unit;
+          });
+
+          // Update the specific pressure unit element
+          const pressureUnitElement = document.getElementById(`pressure-unit-top-${stationNum}`);
+          if (pressureUnitElement) {
+            pressureUnitElement.textContent = info.psr_unit;
+          }
+
+          // Update pressure unit display in Test Info section
+          const startPsrUnitEl = document.getElementById(`start-psr-unit-${stationNum}`);
+          const endPsrUnitEl = document.getElementById(`end-psr-unit-${stationNum}`);
+          if (startPsrUnitEl) {
+            startPsrUnitEl.textContent = info.psr_unit;
+          }
+          if (endPsrUnitEl) {
+            endPsrUnitEl.textContent = info.psr_unit;
+          }
+
+          // Update pressure unit display in gauge headers
+          const setPsrGaugeUnitEl = document.getElementById(`set-psr-gauge-unit-${stationNum}`);
+          const actPsrGaugeUnitEl = document.getElementById(`act-psr-gauge-unit-${stationNum}`);
+          if (setPsrGaugeUnitEl) {
+            setPsrGaugeUnitEl.textContent = `(${info.psr_unit})`;
+          }
+          if (actPsrGaugeUnitEl) {
+            actPsrGaugeUnitEl.textContent = `(${info.psr_unit})`;
+          }
+
+          // Update chart labels with the actual pressure unit
+          updateChartPressureUnit(stationNum, info.psr_unit);
+
+          console.log(`Loaded values for Station ${stationNum}`, info);
+
+        } else {
+          console.warn(`Failed to fetch Station ${stationNum} values`);
+        }
+      } catch (err) {
+        console.error(`Error fetching Station ${stationNum}:`, err);
+      }
+
+    }
+
+
+
+    async function get_enabled_test_buttons(stationNum) {
+
+      try {
+
+        const response = await fetch("/api/get_enabled_tst_btns/");
+        const data = await response.json();
+
+        const container = document.getElementById("station-live-container");
+        if (!container) return;
+
+        let completeBtn = document.getElementById("26");
+        let resetBtn = document.getElementById("reset-btn");
+        container.innerHTML = "";
+
+        let btnData = stationNum === 1 ? data.s1_enabled_tst_btns : [];
+
+
+        if (btnData && btnData.length > 0) {
+          btnData.forEach(btn => {
+
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "btn btn-sm btn-primary";
+            button.id = `station${stationNum}-btn-${btn.id}`; // unique ID
+            button.textContent = btn.name;
+
+            /*STORE ALL REQUIRED DATA */
+            button.dataset.testId = btn.id;
+            button.dataset.testName = btn.name;
+            button.dataset.valveSerial = btn.valve_serial_no;
+            button.dataset.psrUnit = btn.psr_unit;
+
+            button.addEventListener("click", () => {
+              console.log(`Station ${stationNum} → Button clicked: ${btn.id} ${btn.name}`);
+
+              const btnDataObj = {
+                id: btn.id,
+                name: btn.name,
+                valve_serial_no: btn.valve_serial_no,
+                psr_unit: btn.psr_unit
+              };
+
+              // Don't change color here - let onTestButtonClick handle it
+              onTestButtonClick(stationNum, btnDataObj, button)
+
+              activateStation(stationNum)
+
+            });
+            container.appendChild(button);
+
+          });
+
+        }
+
+        // Manage reset button based on current mode
+        manageResetButton(stationNum);
+
+        if (completeBtn) container.appendChild(completeBtn);
+
+        change_btn_color_status(stationNum);
+
+        // Restore button colors based on test results
+        const station = stationState[stationNum];
+        let valveSerial = station?.valveSerial;
+
+        // Fallback: get valve serial from button data if not in state
+        if (!valveSerial && btnData && btnData.length > 0) {
+          valveSerial = btnData[0].valve_serial_no;
+        }
+
+        if (valveSerial) {
+          await updateTestButtonColors(stationNum, valveSerial);
+        }
+
+      } catch (error) {
+        console.error("Error fetching enabled buttons", error);
+      }
+    }
+
+
+    function getLiveState() {
+      return JSON.parse(localStorage.getItem("station_live_state")) || {};
+    }
+
+    function setLiveState(stationNum, data) {
+      const state = getLiveState();
+      state[stationNum] = data;
+      localStorage.setItem("station_live_state", JSON.stringify(state));
+    }
+
+    function getLiveStation(stationNum) {
+      return getLiveState()[stationNum] || null;
+    }
+
+    function clearLiveStation(stationNum) {
+      const state = getLiveState();
+      delete state[stationNum];
+
+      if (Object.keys(state).length === 0) {
+        localStorage.removeItem("station_live_state");
+      } else {
+        localStorage.setItem("station_live_state", JSON.stringify(state));
+      }
+    }
+
+
+
+    let units = null;
+
+    // Function to update degree display based on test name
+    function updateDegreeDisplay(stationNum, testName, openValue, closeValue, isActual = false) {
+      const testNameLower = testName ? testName.toLowerCase() : '';
+      const labelId = isActual ? "acl-degree-label" : "set-degree-label";
+      const valueId = isActual ? "act-degree" : "set-degree";
+
+      if (testNameLower.includes('shell')) {
+        // Show only open degree for shell tests
+        const label = isActual ? "ACTUAL Open Degree" : "SET Open Degree";
+        updateStationLabel(labelId, stationNum, label);
+        updateStationValue(valueId, stationNum, openValue);
+      } else if (testNameLower.includes('seat')) {
+        // Show only close degree for seat tests
+        const label = isActual ? "ACTUAL Close Degree" : "SET Close Degree";
+        updateStationLabel(labelId, stationNum, label);
+        updateStationValue(valueId, stationNum, closeValue);
+      } else {
+        // Show both for other tests
+        const label = isActual ? "ACTUAL Open & Close Degree" : "SET Open & Close Degree";
+        updateStationLabel(labelId, stationNum, label);
+        updateStationValue(valueId, stationNum, `${openValue} & ${closeValue}`);
+      }
+    }
+
+    async function fetch_test_values(id, valve_serial_no, name, stationNum, units) {
+
+      try {
+        const url = `/api/get_test_values/${id}/${valve_serial_no}/${name}/${stationNum}/${units}/`;
+
+        const response = await fetch(url, {
+          method: "GET",
+        });
+
+        const data = await response.json();
+
+        if (data.status === "success") {
+
+
+          const test = stationNum === 1 ? data.station1_value : data.station1_value;
+
+          // const test = testList[0]; 
+          console.log(`Loaded values for Station ${stationNum}:`, test);
+
+          updateStationValue("test-name", stationNum, test.TEST_NAME);
+          updateStationValue("current-test-name", stationNum, test.TEST_NAME);
+          updateStationValue("set-psr", stationNum, test.TESTING_PRESSURE);
+          updateStationValue("set-dur", stationNum, test.TESTING_DUR);
+          updateStationValue("set-clamping", stationNum, test.set_clampping_psr);
+          updateStationValue("allowed-bubls", stationNum, test.set_bubble_count);
+
+          // Get degree values from station state and update degree display
+          const state = stationState[stationNum];
+          if (state && state.degreeValues) {
+            updateDegreeDisplay(
+              stationNum,
+              test.TEST_NAME,
+              state.degreeValues.open_degree,
+              state.degreeValues.close_degree,
+              false // isActual = false for SET values
+            );
+          }
+
+
+          return {
+            testId: test.TEST_ID,
+            testName: test.TEST_NAME,
+            pressure: test.TESTING_PRESSURE,
+            duration: test.TESTING_DUR,
+            set_clampping_psr: test.set_clampping_psr,
+            allowed_bubbles: test.set_bubble_count,
+            valveClass: stationState[stationNum]?.valveClass // Include valve class for gauge scale
+
+          };
+
+        } else {
+          console.warn(`Failed to fetch Station ${stationNum} values`);
+          return null;
+        }
+
+      } catch (err) {
+        console.error(`Error fetching Station ${stationNum}:`, err);
+        return null;
+      }
+
+    }
+
+    function clearStationUI(stationNum) {
+      updateStationValue("serial-no", stationNum, "--");
+      updateStationValue("valve-size", stationNum, "--");
+      updateStationValue("material", stationNum, "--");
+      updateStationValue("operator", stationNum, "--");
+      updateStationValue("set-degree", stationNum, "--");
+    }
+
+
+
+    async function onTestButtonClick(stationNum, btn, buttonEl) {
+      const station = stationState[stationNum];
+      const currentTest = station?.currentTest;
+
+      // CASE 1: Same test clicked again → Re-test
+
+      if (currentTest && currentTest.testId === btn.id) {
+
+        DialogManager.confirmAction({
+          title: "Re-test confirmation",
+          text: "Previous test data will be deleted. Do you want to re-test?",
+          confirmText: "Re-test",
+          cancelText: "Cancel",
+
+          onSuccess: async () => {
+            console.log("CONFIRM clicked");
+            await deleteAndRestartTest(stationNum, currentTest, btn, buttonEl);
+            console.log("DELETE + RESTART finished");
+          }
+        });
+
+        return;
+      }
+
+      //  CASE 2: Another test is running
+
+      if (station?.isCapturing) {
+        DialogManager.alert({
+          title: "Test in progress",
+          text: "Please complete the current test before starting a new one."
+        });
+        return;
+      }
+
+      //  CASE 3: Normal new test
+
+      await startTestFlow(stationNum, btn, buttonEl);
+    }
+
+    async function deleteAndRestartTest(stationNum, currentTest, btn, buttonEl) {
+      try {
+        const res = await fetch(
+          `/api/delete_test_data/${stationNum}/${currentTest.testId}/${currentTest.valveSerial}/`,
+          { method: "DELETE" }
+        );
+
+        const json = await res.json();
+
+        //failure
+        if (!json.success) {
+          DialogManager.toast({
+            type: 'error',
+            title: "Delete failed",
+            message: json.message || "Unable to delete previous test data. Please try again."
+          });
+          return;
+        }
+
+        //success message
+        DialogManager.toast({
+          type: 'success',
+          title: "Deleted",
+          message: json.message
+        });
+
+        // Remove test result colors from button when retest starts
+        if (buttonEl) {
+          buttonEl.classList.remove('test-running', 'test-pass', 'test-fail');
+          console.log(`Removed result colors from button ${buttonEl.id} for retest`);
+        }
+
+        // Clear local runtime state
+        resetStationRuntime(stationNum);
+
+        // Start fresh test
+        await startTestFlow(stationNum, btn, buttonEl);
+
+      } catch (err) {
+        console.error("Delete test error", err);
+        DialogManager.alert({
+          title: "Error",
+          text: "Server error while deleting previous test data."
+        });
+      }
+    }
+
+
+
+    function resetStationRuntime(stationNum) {
+      const state = stationState[stationNum];
+      if (!state) return;
+
+      // Stop polling
+      if (state.interval) {
+        clearInterval(state.interval);
+        state.interval = null;
+      }
+
+      //IMPORTANT: mutate arrays, don't replace
+      state.timeLabels.length = 0;
+      state.pressureData.length = 0;
+
+      // Reset flags
+      state.annotations = {};
+      state.hasStarted = false;
+      state.isCapturing = false;
+      state.startTime = null;
+      state.stopTime = null;
+      state.startPressure = null;
+      state.endPressure = null;
+
+      // Reset chart safely
+      if (state.chart) {
+        state.chart.data.labels = state.timeLabels;
+        state.chart.data.datasets[0].data = state.pressureData;
+        state.chart.update();
+      }
+
+      console.log(`Station ${stationNum} runtime reset`);
+    }
+
+
+
+    async function startTestFlow(stationNum, btn, buttonEl) {
+
+      const testData = await fetch_test_values(btn.id, btn.valve_serial_no, btn.name, stationNum, btn.psr_unit);
+
+      if (!testData) return;
+
+      // Set button to orange (running state) when test actually starts
+      if (buttonEl) {
+        buttonEl.classList.remove('test-pass', 'test-fail');
+        buttonEl.classList.add('test-running');
+      }
+
+      // Reset station for new test BEFORE setting new state
+      // resetStationForNewTest(stationNum);
+
+      const state = {
+        ...testData,              // testId, testName, pressure, duration
+        valveSerial: btn.valve_serial_no,
+        stationNum,
+        buttonId: buttonEl.id,
+        valveClass: stationState[stationNum]?.valveClass // Include valve class for gauge scale
+
+      };
+
+      // Reset UI display values
+      updateStationValue("start-psr", stationNum, "-");
+      updateStationValue("end-psr", stationNum, "-");
+      updateStationValue("start-time", stationNum, "-");
+      updateStationValue("stop-time", stationNum, "-");
+
+      // Reset state values
+      stationState[stationNum].startPressure = null;
+      stationState[stationNum].endPressure = null;
+      stationState[stationNum].live_startTime = null;
+      stationState[stationNum].live_stopTime = null;
+
+      // Fetch gauge scale based on pressure unit and class rating
+      const pressureUnit = stationState[stationNum]?.psr_unit || 'psi';
+      const classRating = stationState[stationNum]?.valveClass || '#150';
+      const valveSerial = btn.valve_serial_no || null;
+      const testId = btn.id || null;  // Test ID from button
+      const gaugeMaxScale = await getGaugeScale(pressureUnit, classRating, valveSerial, testId);
+      stationState[stationNum].gaugeMaxScale = gaugeMaxScale.gauge_scale;
+
+      // Reset runtime flags for a clean test start
+      // stationState[stationNum].hasStarted = true;
+      // stationState[stationNum].isCapturing = true;
+      // stationState[stationNum].annotations = {};
+      // stationState[stationNum].timeLabels = [];
+      // stationState[stationNum].pressureData = [];
+
+      stationState[stationNum].currentTest = state;
+      setLiveState(stationNum, state);
+
+      await restoreFromState(stationNum, state);
+
+      // Update chart y-axis with new scale
+      if (stationState[stationNum].chart) {
+        stationState[stationNum].chart.options.scales.y.max = gaugeMaxScale;
+        stationState[stationNum].chart.update();
+      }
+
+      // Optionally trigger polling explicitly if needed
+      startLivePolling(stationNum);
+    }
+
+
+    async function startTestFlowByTestId(stationNum, testId) {
+
+      // Find the button created by get_enabled_test_buttons()
+      const buttonEl = document.getElementById(`station${stationNum}-btn-${testId}`);
+
+      if (!buttonEl) {
+        console.error("AUTO: Test button not found", stationNum, testId);
+        return;
+      }
+
+      /*REBUILD FULL btn OBJECT */
+      const btn = {
+        id: Number(buttonEl.dataset.testId),
+        name: buttonEl.dataset.testName,
+        valve_serial_no: buttonEl.dataset.valveSerial,
+        psr_unit: buttonEl.dataset.psrUnit
+      };
+
+      await startTestFlow(stationNum, btn, buttonEl);
+      setTestButtonsDisabled(1, true);
+    }
+
+
+
+    async function restoreFromState(stationNum, state) {
+      if (!state) return;
+
+      // Ensure station container exists
+      if (!stationState[stationNum]) return;
+
+      // Save test as single source of truth
+      stationState[stationNum].currentTest = state;
+
+      // Restore UI
+      updateStationValue("test-name", stationNum, state.testName);
+      updateStationValue("current-test-name", stationNum, state.testName);
+      updateStationValue("set-psr", stationNum, state.pressure);
+      updateStationValue("set-dur", stationNum, state.duration);
+      updateStationValue("allowed-bubls", stationNum, state.allowed_bubbles);
+      updateStationValue("set-clamping", stationNum, state.set_clampping_psr);
+      updateStationValue("test-id", stationNum, state.testId);
+
+      // Restore start and end pressure if available
+      if (state.startPressure !== null && state.startPressure !== undefined) {
+        updateStationValue("start-psr", stationNum, state.startPressure);
+        stationState[stationNum].startPressure = state.startPressure;
+      }
+      if (state.endPressure !== null && state.endPressure !== undefined) {
+        updateStationValue("end-psr", stationNum, state.endPressure);
+        stationState[stationNum].endPressure = state.endPressure;
+      }
+      if (state.live_startTime) {
+        const startTimeDisplay = state.live_startTime.split(" ")[1] || state.live_startTime;
+        updateStationValue("start-time", stationNum, startTimeDisplay);
+        stationState[stationNum].live_startTime = state.live_startTime;
+      }
+      if (state.live_stopTime) {
+        const stopTimeDisplay = state.live_stopTime.split(" ")[1] || state.live_stopTime;
+        updateStationValue("stop-time", stationNum, stopTimeDisplay);
+        stationState[stationNum].live_stopTime = state.live_stopTime;
+      }
+
+      // Restore degree display based on test name
+      const stationStateData = stationState[stationNum];
+      if (stationStateData && stationStateData.degreeValues) {
+        updateDegreeDisplay(
+          stationNum,
+          state.testName,
+          stationStateData.degreeValues.open_degree,
+          stationStateData.degreeValues.close_degree,
+          false // isActual = false for SET values
+        );
+      }
+
+      // Stop previous polling (THIS STATION ONLY)
+      if (stationState[stationNum].interval) {
+        clearInterval(stationState[stationNum].interval);
+        stationState[stationNum].interval = null;
+      }
+
+      // Clear chart completely
+      clearLiveChart(stationNum);
+
+      // Restore gauge scale for chart
+      const pressureUnit = stationState[stationNum]?.psr_unit || 'psi';
+      const classRating = stationState[stationNum]?.valveClass || '#150';
+      const valveSerial = state.valveSerial || null;
+      const testId = state.testId || null;
+      const gaugeMaxScale = await getGaugeScale(pressureUnit, classRating, valveSerial, testId);
+      stationState[stationNum].gaugeMaxScale = gaugeMaxScale.gauge_scale;
+
+      // Update chart y-axis with restored scale
+      if (stationState[stationNum].chart) {
+        stationState[stationNum].chart.options.scales.y.max = gaugeMaxScale.gauge_scale;
+      }
+
+      // Load history (this will call change_btn_color_status with proper isCapturing state)
+      await loadStationHistory(stationNum, state.testId, state.valveSerial);
+
+      // Ensure chart exists before live
+      ensureStationChart(stationNum);
+
+      // Start live polling (reads from stationState)
+      startLivePolling(stationNum);
+    }
+
+
+
+
+    async function restoreStationState(stationNum) {
+      const saved = getLiveStation(stationNum);
+      if (!saved) return;
+
+      await restoreFromState(stationNum, saved);
+    }
+
+
+
+    function change_btn_color_status(stationNum) {
+      // const container = document.getElementById(`station-live-${stationNum}`);
+      const container = document.getElementById("station-live-container");
+      if (!container) return;
+
+      // Remove active class from all buttons (but preserve test result colors)
+      container.querySelectorAll("button").forEach(btn => {
+        btn.classList.remove("active-test-btn");
+        // DO NOT remove test-pass or test-fail classes here
+      });
+
+      // Read from SINGLE source of truth
+      const state = getLiveStation(stationNum);
+      if (!state || !state.buttonId) {
+        // No active test - ensure buttons are enabled
+        setTestButtonsDisabled(false);
+        return;
+      }
+
+      const activeBtn = document.getElementById(state.buttonId);
+      if (activeBtn) {
+        activeBtn.classList.add("active-test-btn");
+      }
+
+      // Check if test is currently running and restore disabled state
+      const runtimeState = stationState[stationNum];
+      if (runtimeState && runtimeState.isCapturing) {
+        // Test is running - disable all test buttons
+        setTestButtonsDisabled(true);
+      } else {
+        // Test is not running - enable buttons
+        setTestButtonsDisabled(false);
+      }
+    }
+
+
+    function setTestButtonsDisabled(disabled) {
+      const container = document.getElementById("station-live-container");
+      if (!container) return;
+
+      container.querySelectorAll("button").forEach(btn => {
+        // Skip the cycle complete button (id 26) and reset button (id reset-btn)
+        if (btn.id === "26" || btn.id === "reset-btn") return;
+
+        btn.disabled = disabled;
+        btn.classList.toggle("btn-disabled", disabled);
+      });
+    }
+
+
+
+    function ensureStationChart(stationNum) {
+      const station = stationState[stationNum];
+      if (!station) return false;
+
+      if (!station.chart) {
+        const canvasId = `pressureChart-${stationNum}`;
+        const canvas = document.getElementById(canvasId);
+
+        if (!canvas) {
+          console.warn(`Canvas not found for station ${stationNum}`);
+          return false;
+        }
+
+        const psrUnit = station.psr_unit || 'unit'; // Fallback to 'unit' if not available
+        station.chart = createPressureChart(canvasId, station, psrUnit);
+        console.log(`Chart created for station ${stationNum}`);
+      }
+
+      return true;
+    }
+
+
+    function startLivePolling(stationNum) {
+
+      console.log("START POLLING CHECK", {
+        station: stationNum,
+        stationState: stationState[stationNum],
+        currentTest: stationState[stationNum]?.currentTest
+      });
+
+      const station = stationState[stationNum];
+      if (!station || !station.currentTest) return;
+
+      const { testId, valveSerial } = station.currentTest;
+      if (!testId || !valveSerial) return;
+
+      //Chart must exist first
+      if (!ensureStationChart(stationNum)) return;
+
+      //DEBUG CHECKPOINT (BEST PLACE)
+      console.log("LIVE CHECK", {
+        station: stationNum,
+        hasChart: !!station.chart,
+        hasInterval: !!station.interval,
+        test: station.currentTest
+      });
+
+      // Clear previous interval for THIS station only
+      if (station.interval) {
+        clearInterval(station.interval);
+        station.interval = null;
+      }
+
+      station.interval = setInterval(async () => {
+        try {
+          const res = await fetch(`/api/station/${stationNum}/${testId}/${valveSerial}/live/`);
+          const json = await res.json();
+
+          if (json.status === "success") {
+            handleLivePressure(stationNum, json.data);
+
+          }
+        } catch (err) {
+          console.error(`Station ${stationNum} live fetch error:`, err);
+        }
+        // chekc_hmi_abrs_connection()
+      }, 1000);
+    }
+
+
+    async function loadStationHistory(stationNum, testId, valve_serial) {
+      console.log("load station history is called");
+
+      try {
+        const state = stationState[stationNum];
+        if (!state || !state.chart) return;
+
+        const res = await fetch(
+          `/api/station/${stationNum}/${testId}/${valve_serial}/history/`
+        );
+
+        const json = await res.json();
+
+        if (json.status !== "success" || !Array.isArray(json.data)) {
+          console.warn(`No history data for station ${stationNum}`);
+          return;
+        }
+
+        //Reset chart + state
+        // state.timeLabels.length = 0;
+        // state.pressureData.length = 0;
+        // state.annotations = {};
+        // state.hasStarted = false;
+        // state.isCapturing = false;
+        // state.startTime = null;
+        // state.stopTime = null;
+        // state.startPressure = null;
+        // state.endPressure = null;
+
+        let firstStartIndex = -1;
+        let stopIndex = -1;
+
+        //Load DB values & detect start/stop
+        json.data.forEach((row, index) => {
+
+          state.timeLabels.push(row.time);
+          state.pressureData.push(row.pressure);
+
+          const timerStatus = Number(row.timerStatus);
+
+          // START → first 1
+          if (timerStatus === 1 && firstStartIndex === -1) {
+            firstStartIndex = index;
+            state.live_startTime = row.time;
+            state.startPressure = row.pressure; // STORE
+          }
+
+          // STOP → first 0 AFTER start
+          if (timerStatus === 0 && firstStartIndex !== -1 && stopIndex === -1) {
+            stopIndex = index;
+            state.live_stopTime = row.time;
+            state.endPressure = row.pressure;
+          }
+        });
+
+        //Apply START annotation from history
+        if (firstStartIndex !== -1) {
+          const historyStartTime = state.live_startTime ? state.live_startTime.split(" ")[1] || state.live_startTime : null;
+          addStationAnnotation(stationNum, `start-${stationNum}`, "START", "green", firstStartIndex, state.startPressure, historyStartTime);
+          state.annotations.start = true;
+        }
+
+        //Apply STOP annotation from history
+        if (stopIndex !== -1) {
+          const historyStopTime = state.live_stopTime ? state.live_stopTime.split(" ")[1] || state.live_stopTime : null;
+          addStationAnnotation(stationNum, `stop-${stationNum}`, "STOP", "red", stopIndex, state.endPressure, historyStopTime);
+          state.annotations.stop = true;
+        }
+
+        updateStationValue("start-psr", stationNum, state.startPressure ?? "-");
+        updateStationValue("end-psr", stationNum, state.endPressure ?? "-");
+        // Update pressure unit display for historical data
+        const startPsrUnitEl = document.getElementById(`start-psr-unit-${stationNum}`);
+        const endPsrUnitEl = document.getElementById(`end-psr-unit-${stationNum}`);
+        if (startPsrUnitEl && state.psr_unit) {
+          startPsrUnitEl.textContent = state.psr_unit;
+        }
+        if (endPsrUnitEl && state.psr_unit) {
+          endPsrUnitEl.textContent = state.psr_unit;
+        }
+        // Extract only time portion (HH:MM:SS) for display from history
+        const historyStartTimeDisplay = state.live_startTime ? state.live_startTime.split(" ")[1] || state.live_startTime : "-";
+        const historyStopTimeDisplay = state.live_stopTime ? state.live_stopTime.split(" ")[1] || state.live_stopTime : "-";
+        updateStationValue("start-time", stationNum, historyStartTimeDisplay);
+        updateStationValue("stop-time", stationNum, historyStopTimeDisplay);
+
+        //Sync live behavior
+        state.hasStarted = firstStartIndex !== -1;
+        state.isCapturing = firstStartIndex !== -1 && stopIndex === -1;
+
+        //Update chart once
+        state.chart.update();
+
+        // Update button disabled state based on isCapturing
+        change_btn_color_status(stationNum);
+
+        // Update button colors based on test results
+        if (state.valveSerial) {
+          await updateTestButtonColors(stationNum, state.valveSerial);
+        }
+
+        console.log(`Station ${stationNum} history loaded`, {
+          firstStartIndex,
+          stopIndex,
+          hasStarted: state.hasStarted,
+          isCapturing: state.isCapturing
+        });
+
+
+      } catch (err) {
+        console.error(`Failed to load history for station ${stationNum}:`, err);
+      }
+    }
+
+    const stationState = {
+      // Station 1 - ACTIVE
+      1: {
+        timeLabels: [],
+        pressureData: [],
+        annotations: {},
+        chart: null,
+        hasStarted: false,
+        isCapturing: false,
+        live_startTime: null,
+        live_stopTime: null,
+        startPressure: null,
+        endPressure: null,
+        actual_duration: null,
+        actual_clamping_psr: null,
+        actual_open_degree: null,
+        actual_close_degree: null,
+        interval: null,
+        currentTest: null,
+        valveStatus: { "text": "N/A", "color": "yellow" }
+      }
+    };
+
+
+    function handleLivePressure(stationNum, data) {
+      console.log(`handleLivePressure called: stationNum=${stationNum}, activeStation=${activeStation}`);
+
+      // Only handle station 1 and only if it's the active station
+      if (stationNum !== 1 || stationNum !== activeStation) {
+        console.log(`Skipping handleLivePressure: stationNum=${stationNum}, activeStation=${activeStation}`);
+        return;
+      }
+
+      const state = stationState[stationNum];
+      if (!state || !state.chart) {
+        console.log(`No state or chart for station ${stationNum}`);
+        return;
+      }
+
+      const test = stationState[stationNum]?.currentTest;
+      if (!test) return;
+
+      const pressure = data.actualPressure;
+      updateStationValue("act-psr", stationNum, pressure);
+
+      const duration = data.actual_duration;
+      state.actual_duration = duration;
+      updateStationValue("act-dur", stationNum, duration);
+
+      const actual_open_degree = data.actual_open_degree;
+      state.actual_open_degree = actual_open_degree;
+
+      const actual_close_degree = data.actual_close_degree;
+      state.actual_close_degree = actual_close_degree;
+      // Update degree display based on test name using the reusable function
+      updateDegreeDisplay(
+        stationNum,
+        test.testName,
+        actual_open_degree,
+        actual_close_degree,
+        true // isActual = true for ACTUAL values
+      );
+
+      // Update ACTUAL torque values continuously
+      const actual_open_torque = data.actual_open_torque;
+      state.actual_open_torque = actual_open_torque;
+      const actual_close_torque = data.actual_close_torque;
+      state.actual_close_torque = actual_close_torque;
+      updateStationLabel("acl-torque-label", stationNum, "ACTUAL Open & Close Torque");
+      updateStationValue("act-torque", stationNum, `${actual_open_torque} & ${actual_close_torque}`);
+
+      // Update SET torque values continuously
+      const set_open_torque = data.set_open_torque;
+      state.set_open_torque = set_open_torque;
+      const set_close_torque = data.set_close_torque;
+      state.set_close_torque = set_close_torque;
+      updateStationLabel("set-torque-label", stationNum, "SET Open & Close Torque");
+      updateStationValue("set-torque", stationNum, `${set_open_torque} & ${set_close_torque}`);
+
+      const actual_bubble = data.actual_bubbles;
+      updateStationValue("act-bubles", stationNum, actual_bubble);
+
+      const allowed_bubble = data.allowed_bubbles;
+      updateStationValue("allowed-bubls", stationNum, allowed_bubble);
+
+      const actual_clamping_psr = data.actual_clamping_psr;
+      state.actual_clamping_psr = actual_clamping_psr;
+      updateStationValue("act-clamping", stationNum, actual_clamping_psr);
+
+      const set_clamping_psr = data.set_clamping_psr;
+      state.set_clamping_psr = set_clamping_psr;
+      updateStationValue("set-clamping", stationNum, set_clamping_psr);
+
+      const alarm_msg = data.alarm_msg;
+      console.log("Alarm message received:", alarm_msg);
+      updateStationValue("alarm-msg", stationNum, alarm_msg);
+
+      const timerStatus = Number(data.timerStatus);
+      const fullDateTime = data.time;
+      // const time = fullTime ? fullTime.split(" ")[1] : "";
+      const timepart = fullDateTime.split(" ")[1];
+
+
+      console.log(
+        `[LIVE DEBUG]`,
+        {
+          station: stationNum,
+          timerStatus: data.timerStatus,
+          timerStatusType: typeof data.timerStatus,
+          startTime: stationState[stationNum]?.live_startTime,
+          stopTime: stationState[stationNum]?.live_stopTime,
+          hasStarted: stationState[stationNum]?.hasStarted,
+          isCapturing: stationState[stationNum]?.isCapturing
+        }
+      );
+
+
+      // Push data first
+      state.timeLabels.push(timepart);
+      state.pressureData.push(pressure);
+
+      const index = state.timeLabels.length - 1;
+
+      // START annotation
+      if (timerStatus === 1 && !state.hasStarted && pressure > 0) {
+
+        state.hasStarted = true;
+        state.isCapturing = true;
+
+        setTestButtonsDisabled(true);
+
+
+        if (!state.live_startTime) {
+          state.live_startTime = fullDateTime;
+        }
+        console.log("capture start time", state.live_startTime)
+        state.startPressure = pressure;
+
+        updateStationValue("start-psr", stationNum, pressure)
+        // Update pressure unit display
+        const startPsrUnitEl = document.getElementById(`start-psr-unit-${stationNum}`);
+        if (startPsrUnitEl && state.psr_unit) {
+          startPsrUnitEl.textContent = state.psr_unit;
+        }
+        // Extract only time portion (HH:MM:SS) for display
+        const startTimeDisplay = state.live_startTime ? state.live_startTime.split(" ")[1] || state.live_startTime : "-";
+        updateStationValue("start-time", stationNum, startTimeDisplay);
+
+        if (!state.annotations.start) {
+          addStationAnnotation(stationNum, `start-${stationNum}`, "START", "green", index, pressure, startTimeDisplay);
+          state.annotations.start = true;
+        }
+
+        // Save state to localStorage
+        setLiveState(stationNum, state);
+      }
+
+      // STOP annotation
+      if (timerStatus === 0 && state.hasStarted && state.isCapturing) {
+
+        state.isCapturing = false;
+
+        if (stationModeValues[stationNum] === "auto") {
+          setTestButtonsDisabled(true);
+        } else {
+          setTestButtonsDisabled(false);
+        }
+
+
+        if (!state.live_stopTime) {
+          state.live_stopTime = fullDateTime;
+        }
+        console.log("capture stop time", state.live_stopTime)
+        state.endPressure = pressure;
+        updateStationValue("end-psr", stationNum, pressure);
+        // Update pressure unit display
+        const endPsrUnitEl = document.getElementById(`end-psr-unit-${stationNum}`);
+        if (endPsrUnitEl && state.psr_unit) {
+          endPsrUnitEl.textContent = state.psr_unit;
+        }
+        // Extract only time portion (HH:MM:SS) for display
+        const stopTimeDisplay = state.live_stopTime ? state.live_stopTime.split(" ")[1] || state.live_stopTime : "-";
+        updateStationValue("stop-time", stationNum, stopTimeDisplay);
+
+        save_final_psr(test.testId, test.valveSerial, stationNum);
+
+        if (!state.annotations.stop) {
+          addStationAnnotation(stationNum, `stop-${stationNum}`, "STOP", "red", index, pressure, stopTimeDisplay);
+          state.annotations.stop = true;
+        }
+
+        // Save state to localStorage
+        setLiveState(stationNum, state);
+      }
+
+      if (state.chart) state.chart.update();
+
+      // Final Top-Row Sync
+      const topPsr = document.getElementById(`act-psr-top-${stationNum}`);
+      if (topPsr) topPsr.textContent = Math.round(pressure);
+      const topDur = document.getElementById(`act-dur-top-${stationNum}`);
+      if (topDur) topDur.textContent = duration ?? "0";
+
+      const stData = stationState[stationNum]?.currentTest;
+      if (stData) {
+        const setPsr = document.getElementById(`set-psr-top-${stationNum}`);
+        if (setPsr) setPsr.textContent = stData.pressure ?? "0";
+        const setDur = document.getElementById(`set-dur-top-${stationNum}`);
+        if (setDur) setDur.textContent = stData.duration ?? "0";
+      }
+    }
+
+
+
+    // function save_initial_psr(id, valve_serial_no, stationNum) {
+
+    //   const state = stationState[stationNum];
+
+    //   if (!state.startPressure || !state.endPressure) {
+    //     alert("Test not completed yet");
+    //     return;
+    //   }
+
+    //   const payload = {
+    //     station: stationNum,
+    //     start_pressure: state.startPressure,
+    //     start_time: state.startTime,
+    //   };
+
+    //   fetch(`/api/save_initial_pressure/${id}/${valve_serial_no}/${stationNum}/`, {
+    //     method: "POST",
+    //     headers: {
+    //       "Content-Type": "application/json",
+    //       "X-CSRFToken": getCookie("csrftoken")
+    //     },
+    //     body: JSON.stringify(payload)
+    //   })
+    //     .then(res => res.json())
+    //     .then(data => {
+    //       if (data.status === "success") {
+    //         console.log("inital pressure saved", payload);
+    //       } else {
+    //         console.error("Failed to save initial pressure", data);
+    //       }
+    //     })
+    //     .catch(err => console.error("API error", err));
+    // }
+
+
+
+    function save_final_psr(testId, valveSerial, stationNum) {
+
+      const state = stationState[stationNum];
+
+      if (!state?.currentTest) {
+        console.warn(`No current test for station ${stationNum}`);
+        return;
+      }
+
+      // Get test result from HMI instead of calculating manually
+      const setPressure = state.currentTest.pressure; // Set pressure from test
+      const startPressure = state.startPressure;      // Live start pressure
+      const stopPressure = state.endPressure;          // Live stop pressure
+
+      // Calculate pressure drop (L = difference between stop and start)
+      const L = stopPressure - startPressure;
+
+      fetch('/api/get_result/')
+        .then(response => response.json())
+        .then(data => {
+          let result = "UNKNOWN";
+
+          if (data.status === "success" && data.test_result !== null) {
+            // Use the result from HMI
+            result = data.result_text; // This should be "PASS" or "FAIL"
+            console.log(`HMI Test Result for Station ${stationNum}: ${data.test_result} → ${result}`);
+          } else {
+            // Fallback to manual calculation if HMI read fails
+            // result = stopPressure < setPressure ? "FAIL" : "PASS";
+            // console.warn(`HMI read failed, using manual calculation: ${result}`);
+            result = data.result_text;
+          }
+
+          // Store result in state for later use
+          state.testResult = result;
+          state.valveStatus = data.valve_status || { "text": result, "color": "yellow" };
+          state.pressureDrop = L;
+
+          console.log(`Final Result for Station ${stationNum}:`, {
+            setPressure: setPressure,
+            startPressure: startPressure,
+            stopPressure: stopPressure,
+            pressureDrop: L,
+            result: result,
+            source: data.status === "success" ? "HMI" : "Manual"
+          });
+
+          // Update button color IMMEDIATELY
+          const buttonId = `station${stationNum}-btn-${testId}`;
+          const button = document.getElementById(buttonId);
+          if (button) {
+            // Remove running state and any previous result classes
+            button.classList.remove('test-running', 'active-test-btn', 'test-pass', 'test-fail');
+
+            // Add result color
+            if (result === "PASS") {
+              button.classList.add('test-pass');
+            } else if (result === "FAIL") {
+              button.classList.add('test-fail');
+            }
+            console.log(`Button ${buttonId} color updated to ${result}`);
+          }
+
+          const payload = {
+            station: stationNum,
+            start_pressure: state.startPressure,
+            end_pressure: state.endPressure,
+            start_time: state.live_startTime,
+            end_time: state.live_stopTime,
+            result_psr: state.endPressure,
+            actual_dur: state.actual_duration,
+            clamping_psr: state.actual_clamping_psr,
+            open_degree: state.actual_open_degree,
+            close_degree: state.actual_close_degree,
+            pressure_drop: L,
+            test_result: result
+          };
+
+          console.log("save final pressure with HMI result", payload)
+
+          fetch(`/api/save_final_pressure/${testId}/${valveSerial}/${stationNum}/`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          })
+            .then(res => res.json())
+            .then(data => {
+              console.log("Final pressure saved", data);
+            })
+            .catch(err => console.error("API error", err));
+        })
+        .catch(err => {
+          console.error("Error reading HMI test result:", err);
+
+          // Fallback to manual calculation
+          const result = stopPressure < setPressure ? "FAIL" : "PASS";
+          state.testResult = result;
+          state.valveStatus = { "text": result, "color": result === "PASS" ? "green" : "red" };
+          state.pressureDrop = L;
+
+          console.log(`Fallback manual result for Station ${stationNum}: ${result}`);
+
+          // Continue with manual result
+          const buttonId = `station${stationNum}-btn-${testId}`;
+          const button = document.getElementById(buttonId);
+          if (button) {
+            button.classList.remove('test-running', 'active-test-btn', 'test-pass', 'test-fail');
+            if (result === "PASS") {
+              button.classList.add('test-pass');
+            } else if (result === "FAIL") {
+              button.classList.add('test-fail');
+            }
+          }
+
+          const payload = {
+            station: stationNum,
+            start_pressure: state.startPressure,
+            end_pressure: state.endPressure,
+            start_time: state.live_startTime,
+            end_time: state.live_stopTime,
+            result_psr: state.endPressure,
+            actual_dur: state.actual_duration,
+            clamping_psr: state.actual_clamping_psr,
+            open_degree: state.actual_open_degree,
+            close_degree: state.actual_close_degree,
+            pressure_drop: L,
+            test_result: result
+          };
+
+          fetch(`/api/save_final_pressure/${testId}/${valveSerial}/${stationNum}/`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          })
+            .then(res => res.json())
+            .then(data => {
+              console.log("Final pressure saved with fallback result", data);
+            })
+            .catch(err => console.error("API error", err));
+        });
+    }
+
+
+    async function updateTestButtonColors(stationNum, valveSerial) {
+      try {
+        const response = await fetch(`/api/test_result_status/${stationNum}/${valveSerial}/`);
+        const data = await response.json();
+
+        if (data.status !== "success") return;
+
+        const testStatuses = data.test_statuses;
+
+        // Update each button color based on test status
+        Object.keys(testStatuses).forEach(testId => {
+          const testStatus = testStatuses[testId];
+          const buttonId = `station${stationNum}-btn-${testId}`;
+          const button = document.getElementById(buttonId);
+
+          if (button) {
+            // Remove all status classes first
+            button.classList.remove('test-running', 'test-pass', 'test-fail');
+
+            // Check running status FIRST (STATUS = 1)
+            if (testStatus.running) {
+              // Test is running (STATUS = 1) - show orange
+              button.classList.add('test-running');
+            } else if (testStatus.completed) {
+              // Test completed (STATUS = 0 and has VALVE_STATUS) - show PASS or FAIL
+              if (testStatus.valve_status === "PASS") {
+                button.classList.add('test-pass');
+              } else if (testStatus.valve_status === "FAIL") {
+                button.classList.add('test-fail');
+              }
+            }
+          }
+        });
+      } catch (err) {
+        console.error("Error updating button colors:", err);
+      }
+    }
+
+
+    function clearLiveChart(stationNum) {
+      const state = stationState[stationNum];
+      if (!state || !state.chart) return;
+
+      // Clear chart data
+      state.timeLabels.length = 0;
+      state.pressureData.length = 0;
+
+      // Reset annotations
+      state.annotations = {};
+      state.chart.options.plugins.annotation.annotations = {};
+
+      // Reset test flags
+      state.hasStarted = false;
+      state.isCapturing = false;
+
+      state.startPressure = null;
+      state.endPressure = null;
+
+      state.startTime = null;
+      state.stopTime = null;
+
+      state.live_startTime = null,
+        state.live_stopTime = null,
+
+        state.chart.update();
+    }
+
+
+    function createPressureChart(canvasId, state, psrUnit = 'unit') {
+
+      const ctx = document.getElementById(canvasId).getContext("2d");
+
+      return new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: state.timeLabels,
+          datasets: [{
+            label: `Pressure (${psrUnit})`,
+            data: state.pressureData,
+            borderColor: 'white',
+            backgroundColor: 'transparent',
+            tension: 0.2,
+            fill: true,
+            pointRadius: 0,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: false,
+          scales: {
+            x: {
+              title: { display: true, text: 'Time', color: '#94a3b8' },
+              ticks: { autoSkip: true, maxTicksLimit: 20, color: '#aaa' },
+              grid: { color: 'rgba(255, 255, 255, 0.05)' }
+            },
+            y: {
+              title: { display: true, text: `Pressure (${psrUnit})`, color: '#94a3b8' },
+              beginAtZero: true,
+              max: state.gaugeMaxScale || 100,  // Set max based on gauge scale, default 100
+              ticks: { color: '#aaa' },
+              grid: { color: 'rgba(255, 255, 255, 0.05)' }
+            }
+          },
+          plugins: {
+            legend: {
+              display: true,
+              labels: { color: '#ffffff' }
+            },
+            annotation: { annotations: state.annotations }
+          }
+        }
+      });
+    }
+
+    // Initialize only station 1 chart
+    stationState[1].chart = createPressureChart("pressureChart-1", stationState[1], stationState[1].psr_unit || 'unit');
+    console.log(stationState[1].annotations);
+
+
+
+    function addStationAnnotation(stationNum, key, label, color, index, pressure = null, time = null) {
+
+      const state = stationState[stationNum];
+      const chart = state.chart;
+
+      if (!chart.options.plugins.annotation) {
+        chart.options.plugins.annotation = { annotations: {} };
+      }
+
+      // Build label content with pressure and time if provided
+      let labelContent = label;
+      if (pressure !== null && pressure !== undefined) {
+        const unit = state.psr_unit || '';
+        labelContent = `${label} ${Math.round(pressure)} ${unit}`;
+
+        // Add time if provided
+        if (time) {
+          labelContent += ` ${time}`;
+        }
+      }
+
+      chart.options.plugins.annotation.annotations[key] = {
+        type: 'line',
+        scaleID: 'x',
+        value: index,
+        borderColor: color,
+        borderWidth: 2,
+        label: {
+          display: true,
+          content: labelContent,
+          color: color,
+          position: 'end',  // Show on left side
+          rotation: 270,    // Vertical text (bottom to top)
+          font: { weight: 'bold', size: 10 },
+          backgroundColor: 'rgba(0, 0, 0, 0.7)',
+          padding: 4
+        }
+      };
+
+      chart.update();
+    }
+
+    function updateChartPressureUnit(stationNum, psrUnit) {
+      const state = stationState[stationNum];
+      if (!state || !state.chart) return;
+
+      const chart = state.chart;
+
+      // Update Y-axis label
+      if (chart.options.scales.y && chart.options.scales.y.title) {
+        chart.options.scales.y.title.text = `Pressure (${psrUnit})`;
+      }
+
+      // Update dataset label
+      if (chart.data.datasets && chart.data.datasets[0]) {
+        chart.data.datasets[0].label = `Pressure (${psrUnit})`;
+      }
+
+      // Apply the changes
+      chart.update();
+
+      console.log(`Chart unit updated for station ${stationNum}: ${psrUnit}`);
+    }
+
+
+    function resetStation() {
+      console.log("Reset button clicked");
+
+      // Get current station
+      const stationNum = currentStation;
+
+      if (!stationNum) {
+        alert("No station selected");
+        return;
+      }
+
+      DialogManager.confirmAction({
+        title: `Reset Station ${stationNum}`,
+        text: "This will reset the current test. Are you sure?",
+        confirmText: "Reset",
+        cancelText: "Cancel",
+
+        onSuccess: async () => {
+          try {
+            console.log(`Resetting Station ${stationNum}`);
+
+            // Reset the station runtime state
+            resetStationRuntime(stationNum);
+
+            // Clear the live chart
+            clearLiveChart(stationNum);
+
+            // Reset button colors
+            change_btn_color_status(stationNum);
+
+            // Show success message
+            DialogManager.toast({
+              type: 'success',
+              message: `Station ${stationNum} reset successfully`,
+              duration: 3000
+            });
+
+          } catch (error) {
+            console.error("Error resetting station:", error);
+            DialogManager.toast({
+              type: 'error',
+              message: "Failed to reset station",
+              duration: 4000
+            });
+          }
+        }
+      });
+    }
+
+
+    function manageResetButton(stationNum) {
+
+      const mode = stationModeValues[stationNum];
+      const container = document.getElementById("station-live-container");
+
+      if (!container) {
+        console.warn("Station container not found");
+        return;
+      }
+
+      let resetBtn = document.getElementById("reset-btn");
+
+      if (mode === "auto") {
+        if (!resetBtn) {
+          // Create reset button if it doesn't exist
+          resetBtn = document.createElement("button");
+          resetBtn.style.backgroundColor = "white";
+          resetBtn.style.border = "1px solid black";
+          resetBtn.className = "btn btn-sm btn-light";
+          resetBtn.id = "reset-btn";
+          resetBtn.textContent = "RESET";
+          resetBtn.onclick = resetallStation;
+          resetBtn.style.color = "black";
+
+
+          // Insert before cycle complete button
+          const cycleBtn = document.getElementById("26");
+          if (cycleBtn) {
+            container.insertBefore(resetBtn, cycleBtn);
+          } else {
+            container.appendChild(resetBtn);
+          }
+
+          console.log(`Reset button created for station ${stationNum} (auto mode)`);
+        } else {
+          resetBtn.style.display = "inline-block";
+          resetBtn.style.color = "black";
+          console.log(`Reset button shown for station ${stationNum} (auto mode)`);
+        }
+      } else {
+        if (resetBtn) {
+          resetBtn.style.display = "none";
+          console.log(`Reset button hidden for station ${stationNum} (manual mode)`);
+        }
+      }
+    }
+
+    function resetallStation() {
+      DialogManager.confirm({
+        title: 'Reset All Stations?',
+        message: 'This action cannot be undone!',
+        confirmText: 'Yes, Reset',
+        cancelText: 'Cancel',
+        reverseButtons: true,
+        onConfirm: () => performReset()
+      });
+    }
+
+    function performReset() {
+      // Get CSRF token
+      function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+          const cookies = document.cookie.split(';');
+          for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+              cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+              break;
+            }
+          }
+        }
+        return cookieValue;
+      }
+
+      // Clear only button state localStorage
+      function clearButtonState() {
+        // Clear station live state (button states, test selections)
+        localStorage.removeItem('station_live_state');
+        console.log('Cleared button state: station_live_state');
+      }
+
+      // Show loading
+      DialogManager.loading('Resetting...', 'Please wait');
+
+      fetch('/api/resetallstation/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCookie('csrftoken'),
+        },
+        body: JSON.stringify({}),
+      })
+        .then(response => response.json())
+        .then(data => {
+          DialogManager.closeLoading();
+
+          if (data.status === "success") {
+            // Clear only button state
+            clearButtonState();
+
+            DialogManager.toast({
+              type: 'success',
+              message: 'All stations reset successfully',
+              duration: 3000
+            });
+
+            // Reload after a short delay
+            setTimeout(() => {
+              location.reload();
+            }, 1000);
+          }
+          else if (data.status === "failure") {
+            DialogManager.toast({
+              type: 'warning',
+              message: 'Kindly Stop the cycle to Reset',
+              duration: 3000
+            });
+          }
+          else {
+            DialogManager.toast({
+              type: 'error',
+              message: 'Failed to reset all stations',
+              duration: 4000
+            });
+          }
+        })
+        .catch(error => {
+          DialogManager.closeLoading();
+          console.error('Error resetting all stations:', error);
+          DialogManager.toast({
+            type: 'error',
+            message: 'Error resetting all stations',
+            duration: 4000
+          });
+        });
+    }
+
+
+    // Global variables to store current completion context
+    let pendingStationNum = null;
+    let pendingValveSerial = null;
+
+    function openTorqueModal() {
+      document.getElementById('torqueActuatorModal').style.display = 'flex';
+      loadActiveGauges(); // Load active gauges when modal opens
+    }
+
+    function closeTorqueModal() {
+      document.getElementById('torqueActuatorModal').style.display = 'none';
+      pendingStationNum = null;
+      pendingValveSerial = null;
+    }
+
+    async function saveAndComplete() {
+      // Validate that stationNum and valve serial are available
+      if (!pendingStationNum || !pendingValveSerial) {
+        DialogManager.toast({ type: 'error', message: 'Session error: missing station or valve info' });
+        return;
+      }
+
+      // Show loading
+      DialogManager.loading('Saving details and completing cycle...', 'Please wait');
+
+      // Collect all modal form values
+      const torquePayload = {
+        breakaway_thrust: document.getElementById('breakawayThrust')?.value || '',
+        torque_break_nm: document.getElementById('torqueBreak')?.value || '',
+        torque_run: document.getElementById('torqueRun')?.value || '',
+        actuator_make: document.getElementById('actuatorMake')?.value || '',
+        actuator_model: document.getElementById('actuatorModel')?.value || '',
+        rpm_value: document.getElementById('rpmValue')?.value || '',
+        act_s_no: document.getElementById('actSNo')?.value || '',
+        // Opening Torque – two separate sub-fields
+        opening_full_torque: document.getElementById('openingFullTorque')?.value || '',
+        opening_torque_act_setting: document.getElementById('openingTorqueActSetting')?.value || '',
+        // Closing Torque – two separate sub-fields
+        closing_full_torque: document.getElementById('closingFullTorque')?.value || '',
+        closing_torque_act_setting: document.getElementById('closingTorqueActSetting')?.value || '',
+        // Operating Time – three separate sub-fields
+        operating_time_gad: document.getElementById('operatingTimeGAD')?.value || '',
+        operating_time_open_to_close: document.getElementById('operatingTimeOpenToClose')?.value || '',
+        operating_time_close_to_open: document.getElementById('operatingTimeCloseToOpen')?.value || '',
+        // Bottom selects
+        media_drained: document.getElementById('mediaDrained')?.value || '',
+        bleeder_tightened: document.getElementById('bleederTightened')?.value || '',
+        // Gauges
+        hydro_gauge_1: document.getElementById('hydroGauge1')?.value || '',
+        hydro_gauge_2: document.getElementById('hydroGauge2')?.value || '',
+        air_gauge_1: document.getElementById('airGauge1')?.value || '',
+        air_gauge_2: document.getElementById('airGauge2')?.value || '',
+        hydro_transducer: document.getElementById('hydroTransducer')?.value || '',
+        air_transducer: document.getElementById('airTransducer')?.value || '',
+      };
+
+      console.log('[TORQUE] Saving payload:', torquePayload);
+
+      try {
+        // Step 1 – persist torque/actuator data first
+        const torqueRes = await fetch(`/api/save_torque_actuator/${pendingStationNum}/${pendingValveSerial}/`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+          },
+          body: JSON.stringify(torquePayload)
+        });
+        const torqueData = await torqueRes.json();
+        console.log('[TORQUE] API response:', torqueData);
+
+        if (torqueData.status !== 'success') {
+          DialogManager.closeLoading();
+          DialogManager.toast({ type: 'warning', message: torqueData.message || 'Failed to save Torque/Actuator data' });
+          return;
+        }
+
+        // Step 2 – proceed with original cycle complete
+        await performActualCompletion(pendingStationNum, pendingValveSerial);
+
+      } catch (err) {
+        DialogManager.closeLoading();
+        console.error('[TORQUE] Error saving torque/actuator data:', err);
+        DialogManager.toast({ type: 'error', message: 'Error saving Torque/Actuator data' });
+      }
+    }
+
+    async function performActualCompletion(stationNum, valveSerial) {
+      try {
+        const response = await fetch(`/api/cyclecomplete/${stationNum}/${valveSerial}/`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+          }
+        });
+
+        const data = await response.json();
+        DialogManager.closeLoading();
+
+        if (data.success || data.status === 'success') {
+          DialogManager.toast({
+            type: 'success',
+            message: data.message || 'Cycle completed successfully'
+          });
+
+          // Save PDF report to folder instead of downloading
+          try {
+            const pdfResponse = await fetch(`/pdf/?serial_no=${valveSerial}&download=true`);
+            const pdfData = await pdfResponse.json();
+
+            if (pdfData.success) {
+              console.log('[PDF] Report saved:', pdfData.filepath);
+              DialogManager.toast({
+                type: 'success',
+                message: 'Report saved successfully'
+              });
+            } else {
+              console.error('[PDF] Failed to save report:', pdfData.message);
+              DialogManager.toast({
+                type: 'warning',
+                message: 'Cycle completed but report save failed'
+              });
+            }
+          } catch (pdfError) {
+            console.error('[PDF] Error saving report:', pdfError);
+            DialogManager.toast({
+              type: 'warning',
+              message: 'Cycle completed but report save failed'
+            });
+          }
+
+          closeTorqueModal();
+          clearLiveStation(stationNum);
+
+          // Redirect to dashboard after a short delay
+          setTimeout(() => {
+            window.location.href = '/';
+          }, 2000);
+        } else {
+          DialogManager.toast({
+            type: 'error',
+            message: data.message || 'Failed to complete cycle'
+          });
+        }
+      } catch (error) {
+        DialogManager.closeLoading();
+        console.error("Error during actual completion:", error);
+        DialogManager.toast({
+          type: 'error',
+          message: 'Server error during completion'
+        });
+      }
+    }
+
+    async function cycleComplete(stationNum, valveSerial) {
+      console.log("[DEBUG] Intercepted cycleComplete for Torque UI:", stationNum, valveSerial);
+
+      if (!stationNum || !valveSerial) {
+        console.error("Missing station or valve serial");
+        return;
+      }
+
+      DialogManager.confirmAction({
+        title: `Do you want to complete Station ${stationNum} tests?`,
+        text: "This action cannot be undone.",
+        confirmText: "Complete",
+        cancelText: "Continue",
+        // Removal of automatic API call to show our modal instead
+
+        onSuccess: async () => {
+          pendingStationNum = stationNum;
+          pendingValveSerial = valveSerial;
+          openTorqueModal();
+        }
+      });
+    }
+
+    // Function to load active gauges
+    async function loadActiveGauges() {
+      try {
+        const response = await fetch('/api/gauge_details/');
+        const data = await response.json();
+
+        if (!data || !data.gauges) {
+          console.warn("No gauges data returned");
+          return;
+        }
+
+        const activeGauges = data.gauges.filter(g => g.active_status === 1);
+
+        // Define dropdown configurations
+        const gaugeSelects = [
+          { id: 'hydroGauge1', name: 'Hydro Gauge 1' },
+          { id: 'hydroGauge2', name: 'Hydro Gauge 2' },
+          { id: 'airGauge1', name: 'Air Gauge 1' },
+          { id: 'airGauge2', name: 'Air Gauge 2' },
+          { id: 'hydroTransducer', name: 'Hydro Transducer' },
+          { id: 'airTransducer', name: 'Air Transducer' }
+        ];
+
+        gaugeSelects.forEach(selectConfig => {
+          const selectElement = document.getElementById(selectConfig.id);
+          if (!selectElement) return;
+
+          // Clear existing options, keep the disabled placeholder if it exists
+          // Since we reconstruct it, just clear the innerHTML
+          selectElement.innerHTML = `<option value="" disabled selected>Select ${selectConfig.name}</option>
+                                     <option value="N/A">N/A</option>`;
+
+          activeGauges.forEach(gauge => {
+            const option = document.createElement('option');
+            // Format: Gauge Serial No - Gauge Name (using gauge_type for name as typical)
+            const optionText = `${gauge.gauge_ser_no} - ${gauge.gauge_type || 'Unknown'}`;
+            option.value = optionText;
+            option.textContent = optionText;
+            selectElement.appendChild(option);
+          });
+        });
+
+      } catch (error) {
+        console.error("Error loading active gauges:", error);
+      }
+    }
+
+    let cycleCompleteCallCount = 0; // Counter to track calls
+
+    function handleCycleCompleteResponse(response, stationNum) {
+      cycleCompleteCallCount++;
+      console.log("[DEBUG] handleCycleCompleteResponse called:", response);
+
+      if (!response || response.success === false) return;
+
+      if (response.success === true) {
+        clearLiveStation(stationNum);
+
+        localStorage.removeItem(`station${stationNum}-selected-test`);
+        localStorage.removeItem(`station${stationNum}-locked`);
+        localStorage.removeItem("lastActiveStation");
+
+        const prefix = `station${stationNum}_`;
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key && key.startsWith(prefix)) {
+            localStorage.removeItem(key);
+          }
+        }
+
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 1500);
+      }
+    }
+
+    // --- Gauge Drawing Logic ---
+    /* ============================================
+       PREMIUM GAUGE RENDERER – Matches reference design
+       ============================================ */
+    function drawGauge(canvasId, value, maxVal = 100, label = "Pressure") {
+      const canvas = document.getElementById(canvasId);
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const dpr = window.devicePixelRatio || 1;
+      const W = canvas.width / dpr;
+      const H = canvas.height / dpr;
+      const x = W / 2;
+      const y = H / 2 + 4;
+      const radius = Math.min(x, y) * 0.92;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.save();
+      ctx.scale(dpr, dpr);
+
+      // === OUTER LIGHT-BLUE CHROME RING ===
+      const ringWidth = 6;
+      const outerGrad = ctx.createRadialGradient(x, y, radius - 2, x, y, radius + ringWidth);
+      outerGrad.addColorStop(0, '#b8e4f0');
+      outerGrad.addColorStop(0.35, '#8fd4ea');
+      outerGrad.addColorStop(0.65, '#6ec4df');
+      outerGrad.addColorStop(1, '#4aadc8');
+      ctx.beginPath();
+      ctx.arc(x, y, radius + ringWidth / 2, 0, 2 * Math.PI);
+      ctx.strokeStyle = outerGrad;
+      ctx.lineWidth = ringWidth;
+      ctx.stroke();
+
+      // Thin dark edge on the outer ring
+      ctx.beginPath();
+      ctx.arc(x, y, radius + ringWidth + 0.5, 0, 2 * Math.PI);
+      ctx.strokeStyle = 'rgba(0,0,0,0.15)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      // === WHITE FACE with subtle gradient ===
+      ctx.beginPath();
+      ctx.arc(x, y, radius - 1, 0, 2 * Math.PI);
+      const faceGrad = ctx.createRadialGradient(x - radius * 0.15, y - radius * 0.15, 0, x, y, radius);
+      faceGrad.addColorStop(0, '#ffffff');
+      faceGrad.addColorStop(0.85, '#f7f7f7');
+      faceGrad.addColorStop(1, '#ececec');
+      ctx.fillStyle = faceGrad;
+      ctx.fill();
+
+      // === ARC SETTINGS (270° sweep) ===
+      const startAngle = 0.75 * Math.PI;
+      const endAngle = 2.25 * Math.PI;
+      const totalRange = endAngle - startAngle;
+      function getAngle(val) { return startAngle + (val / maxVal) * totalRange; }
+
+      const arcWidth = radius * 0.12;
+      const arcRadius = radius - radius * 0.14;
+
+      // === COLORED ARC BAND – sharp zones, no gradients ===
+      // RED zone 0-20%
+      ctx.beginPath();
+      ctx.arc(x, y, arcRadius, startAngle, getAngle(maxVal * 0.2));
+      ctx.strokeStyle = '#cc0000';
+      ctx.lineWidth = arcWidth;
+      ctx.lineCap = 'butt';
+      ctx.stroke();
+
+      // GREEN zone 20-80% (bright vivid green)
+      ctx.beginPath();
+      ctx.arc(x, y, arcRadius, getAngle(maxVal * 0.2), getAngle(maxVal * 0.8));
+      ctx.strokeStyle = '#1ea83c';
+      ctx.lineWidth = arcWidth;
+      ctx.lineCap = 'butt';
+      ctx.stroke();
+
+      // RED zone 80-100%
+      ctx.beginPath();
+      ctx.arc(x, y, arcRadius, getAngle(maxVal * 0.8), endAngle);
+      ctx.strokeStyle = '#cc0000';
+      ctx.lineWidth = arcWidth;
+      ctx.lineCap = 'butt';
+      ctx.stroke();
+
+      // === TICK MARKS ===
+      const majorTicks = 10;
+      const minorPerMajor = 5;
+      const totalMinor = majorTicks * minorPerMajor;
+      const outerTickR = arcRadius + arcWidth / 2;
+
+      for (let i = 0; i <= totalMinor; i++) {
+        const val = (i / totalMinor) * maxVal;
+        const angle = getAngle(val);
+        const isMajor = i % minorPerMajor === 0;
+        const tickLen = isMajor ? arcWidth * 1.2 : arcWidth * 0.5;
+        const tickWidth = isMajor ? 2.5 : 1;
+
+        const x1 = x + (outerTickR) * Math.cos(angle);
+        const y1 = y + (outerTickR) * Math.sin(angle);
+        const x2 = x + (outerTickR - tickLen) * Math.cos(angle);
+        const y2 = y + (outerTickR - tickLen) * Math.sin(angle);
+
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.strokeStyle = isMajor ? '#1a1a1a' : '#555555';
+        ctx.lineWidth = tickWidth;
+        ctx.stroke();
+
+        // === NUMBER LABELS (major ticks only) ===
+        if (isMajor) {
+          const numR = arcRadius - arcWidth * 0.8 - radius * 0.08;
+          const tx = x + numR * Math.cos(angle);
+          const ty = y + numR * Math.sin(angle);
+          ctx.fillStyle = '#1a1a1a';
+          ctx.font = `bold ${Math.round(radius * 0.11)}px Arial`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(Math.round(val), tx, ty);
+        }
+      }
+
+      // === LABEL TEXT ===
+      ctx.font = `bold ${Math.round(radius * 0.1)}px 'Inter', Arial, sans-serif`;
+      ctx.fillStyle = '#333333';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(label, x, y - radius * 0.3);
+
+      // === NEEDLE ===
+      const clampedVal = Math.max(0, Math.min(value, maxVal));
+      const needleAngle = getAngle(clampedVal);
+      const needleLen = arcRadius - arcWidth * 0.2;
+      const tailLen = radius * 0.18;
+
+      // Needle shadow
+      ctx.save();
+      ctx.shadowBlur = 5;
+      ctx.shadowColor = 'rgba(0,0,0,0.3)';
+      ctx.shadowOffsetX = 1;
+      ctx.shadowOffsetY = 2;
+
+      // Needle body (tapered, dark navy blue)
+      ctx.beginPath();
+      const tipX = x + needleLen * Math.cos(needleAngle);
+      const tipY = y + needleLen * Math.sin(needleAngle);
+      const perpAngle = needleAngle + Math.PI / 2;
+      const baseHalf = radius * 0.022;
+      const tailX = x - tailLen * Math.cos(needleAngle);
+      const tailY = y - tailLen * Math.sin(needleAngle);
+      const tailHalf = radius * 0.035;
+
+      ctx.moveTo(tipX, tipY);
+      ctx.lineTo(x + baseHalf * Math.cos(perpAngle), y + baseHalf * Math.sin(perpAngle));
+      ctx.lineTo(tailX + tailHalf * Math.cos(perpAngle), tailY + tailHalf * Math.sin(perpAngle));
+      ctx.lineTo(tailX - tailHalf * Math.cos(perpAngle), tailY - tailHalf * Math.sin(perpAngle));
+      ctx.lineTo(x - baseHalf * Math.cos(perpAngle), y - baseHalf * Math.sin(perpAngle));
+      ctx.closePath();
+
+      ctx.fillStyle = '#0a1628';
+      ctx.fill();
+      ctx.restore();
+
+      // === CENTER HUB (small white/silver cap) ===
+      // White outer circle
+      ctx.beginPath();
+      ctx.arc(x, y, radius * 0.07, 0, 2 * Math.PI);
+      const hubGrad = ctx.createRadialGradient(x - 1, y - 1, 0, x, y, radius * 0.07);
+      hubGrad.addColorStop(0, '#ffffff');
+      hubGrad.addColorStop(0.6, '#e8e8e8');
+      hubGrad.addColorStop(1, '#cccccc');
+      ctx.fillStyle = hubGrad;
+      ctx.fill();
+      ctx.strokeStyle = '#999999';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      // Small dark center dot
+      ctx.beginPath();
+      ctx.arc(x, y, radius * 0.025, 0, 2 * Math.PI);
+      ctx.fillStyle = '#333333';
+      ctx.fill();
+
+      // === VALUE TEXT (bottom) ===
+      ctx.font = `bold ${Math.round(radius * 0.17)}px 'JetBrains Mono', monospace`;
+      ctx.fillStyle = '#1a1a1a';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(Math.round(value), x, y + radius * 0.62);
+
+      ctx.restore();
+    }
+
+    // === RESPONSIVE GAUGE INITIALIZATION ===
+    function sizeAndDrawGauge(canvasId, value, maxVal, label) {
+      const canvas = document.getElementById(canvasId);
+      if (!canvas) return;
+      const wrap = canvas.parentElement;
+      const dpr = window.devicePixelRatio || 1;
+      const w = wrap.clientWidth;
+      const h = wrap.clientHeight;
+      const size = Math.min(w, h);
+      canvas.width = size * dpr;
+      canvas.height = size * dpr;
+      canvas.style.width = size + 'px';
+      canvas.style.height = size + 'px';
+      drawGauge(canvasId, value, maxVal, label);
+    }
+
+    async function initGauges() {
+      // Initialize with default values, will be updated with actual data when available
+      sizeAndDrawGauge('gaugeCanvas1', 0, 100, 'Set Pressure');
+      sizeAndDrawGauge('gaugeCanvas2', 0, 100, 'Actual Pressure');
+    }
+
+    initGauges();
+    window.addEventListener('resize', initGauges);
+
+    // Update handleLivePressure to redraw gauges
+    const originalHandleLivePressure = handleLivePressure;
+    handleLivePressure = async function (stationNum, data) {
+      originalHandleLivePressure(stationNum, data);
+
+      const pressure = data.actualPressure || 0;
+      if (stationNum === 1) {
+        // Get the current test to access pressure unit and class rating
+        const test = stationState[1]?.currentTest;
+        if (test) {
+          // Use dynamic gauge scale based on pressure unit and class rating
+          const pressureUnit = stationState[1]?.psr_unit || 'psi'; // Default to psi if not available
+          // Get class rating from the current test state, fallback to station state
+          const classRating = test?.valveClass || stationState[1]?.valveClass || '#150'; // Default to #150 if not available
+
+          // Update actual pressure gauge with dynamic scale
+          await updateGaugeWithScale("gaugeCanvas2", pressure, pressureUnit, classRating, "Actual Pressure");
+        } else {
+          // Fallback to default drawing if test info not available
+          drawGauge("gaugeCanvas2", pressure, 100, "Actual Pressure");
+        }
+
+        // Update SN and result pressure in footer
+        if (test) {
+          const sn1Element = document.getElementById("SN_1");
+          if (sn1Element) {
+            sn1Element.textContent = `SN : ${test.valveSerial || 'N/A'}`;
+          }
+
+          const sn2Element = document.getElementById("SN_2");
+          if (sn2Element) {
+            sn2Element.textContent = `SN : ${test.valveSerial || 'N/A'}`;
+          }
+
+          const resultPressureElement = document.getElementById("result_pressure_s1");
+          if (resultPressureElement) {
+            resultPressureElement.textContent = Math.round(pressure);
+          }
+
+          // Update VALVE STATUS with color coding
+          const valveStatusElement = document.getElementById("valve_status_s1");
+          if (valveStatusElement) {
+            if (data.valve_status) {
+              valveStatusElement.textContent = data.valve_status.text || "N/A";
+              valveStatusElement.style.color = data.valve_status.color === "yellow" ? "#ffcc00" :
+                data.valve_status.color === "red" ? "#ff4444" :
+                  data.valve_status.color === "green" ? "#44ff44" :
+                    data.valve_status.color === "blue" ? "#4488ff" : "#ffcc00";
+
+              // Add text shadow for better visibility
+              if (data.valve_status.color === "yellow") {
+                valveStatusElement.style.textShadow = "0 0 10px rgba(255,204,0,0.2)";
+              } else {
+                valveStatusElement.style.textShadow = "0 0 10px rgba(255,255,255,0.2)";
+              }
+            } else {
+              valveStatusElement.textContent = stationState[1].testResult || "N/A";
+              valveStatusElement.style.color = "#ffcc00";
+              valveStatusElement.style.textShadow = "0 0 10px rgba(255,204,0,0.2)";
+            }
+          }
+
+          // Update Top Row cards
+          const topPsr = document.getElementById("act-psr-top-1");
+          if (topPsr) topPsr.textContent = Math.round(pressure);
+
+          const topDur = document.getElementById("act-dur-top-1");
+          if (topDur && data.actual_duration) topDur.textContent = data.actual_duration;
+
+          // Update static set gauge with dynamic scale
+          if (test) {
+            const pressureUnit = stationState[1]?.psr_unit || 'psi';
+            const classRating = test?.valveClass || stationState[1]?.valveClass || '#150';
+            await updateGaugeWithScale("gaugeCanvas1", test.pressure || 0, pressureUnit, classRating, "Set Pressure");
+          } else {
+            drawGauge("gaugeCanvas1", test.pressure || 0, 100, "Set Pressure");
+          }
+
+          const setPsrDisplayElement = document.getElementById("set-psr-display-1");
+          if (setPsrDisplayElement) {
+            setPsrDisplayElement.textContent = (test.pressure || 0).toFixed(1);
+          }
+        }
+      }
+      // For station 2, if it existed, we'd do the same for gaugeCanvas2
+    };
+
+    // Function to get gauge scale based on pressure unit and class rating
+    async function getGaugeScale(pressureUnit, classRating, valveSerial = null, testId = null) {
+      try {
+        const payload = {
+          pressure_unit: pressureUnit,
+          class_rating: classRating
+        };
+
+        // Add valve serial if provided
+        if (valveSerial) {
+          payload.valve_serial = valveSerial;
+        }
+
+        // Add test ID if provided
+        if (testId) {
+          payload.test_id = testId;
+        }
+
+        const response = await fetch('/api/gauge_scale/get-gauge-scale/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+
+        if (data.status === 'success') {
+          return data;
+        } else {
+          console.error('Error getting gauge scale:', data.message);
+          return 100; // default value
+        }
+      } catch (error) {
+        console.error('Error calling gauge scale API:', error);
+        return 100; // default value
+      }
+    }
+
+    // Function to update gauge with proper scale based on valve class and pressure unit
+    async function updateGaugeWithScale(canvasId, value, pressureUnit, classRating, label) {
+      // Get valve serial and test ID from station state
+      const valveSerial = stationState[1]?.valveSerial || null;
+      const testId = stationState[1]?.currentTest?.testId || null;
+      const maxVal = await getGaugeScale(pressureUnit, classRating, valveSerial, testId);
+
+      if (label === "Set Pressure") {
+        const setPressure = maxVal.gauge_config["set_pressure_2"].status ? 2 :1;
+        drawGauge(canvasId, value, (maxVal.gauge_scale * setPressure ), label);
+      } else {
+        const actualPressure = maxVal.gauge_config["actual_pressure_2"].status ? 2 :1;
+        drawGauge(canvasId, value, (maxVal.gauge_scale * actualPressure), label);
+      }
+    }
+
+    // Helper to get CSRF token
+    function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          if (cookie.substring(0, name.length + 1) === (name + '=')) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+        }
+      }
+      return cookieValue;
+    }
+
+  </script>
+
+  <!-- Torque and Actuator Detail Modal -->
+  <div id="torqueActuatorModal">
+    <div class="torque-modal-content">
+      <div class="torque-modal-header">
+        <h2>Torque and Actuator Detail</h2>
+        <i class="fas fa-times" style="cursor: pointer; font-size: 1.5rem;" onclick="closeTorqueModal()"></i>
+      </div>
+      <div class="torque-modal-body">
+        <div class="torque-section-title">Torque Value</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Breakaway thrust (Force) N < 360 N</label>
+                <select id="breakawayThrust">
+                  <option value="Yes">Yes</option>
+                  <option value="No">No</option>
+                </select>
+          </div>
+          <div class="form-group">
+            <label>Torque Break Nm</label>
+            <input type="text" id="torqueBreak" placeholder="Enter value">
+          </div>
+          <div class="form-group">
+            <label>Torque Run</label>
+            <input type="text" id="torqueRun" placeholder="Enter value">
+          </div>
+        </div>
+
+        <div class="torque-section-title">Actuator Detail</div>
+        <div class="form-grid">
+          <div class="form-group" style="grid-column: span 2;">
+            <label>Actuator Make</label>
+            <input type="text" id="actuatorMake" placeholder="Enter make">
+          </div>
+          <div class="form-group">
+            <label>Actuator Model</label>
+            <input type="text" id="actuatorModel" placeholder="Enter model">
+          </div>
+          <div class="form-group">
+            <label>RPM Value</label>
+            <input type="text" id="rpmValue" placeholder="Enter RPM">
+          </div>
+          <div class="form-group">
+            <label>Act S No</label>
+            <input type="text" id="actSNo" placeholder="Enter serial number">
+          </div>
+        </div>
+
+        <!-- <button class="dataloger-btn">Valve Dataloger</button> -->
+
+        <div class="torque-grid-container">
+          <table class="torque-grid-table">
+            <thead>
+              <tr>
+                <th colspan="2">Opening Torque</th>
+                <th colspan="2">Closing Torque</th>
+                <th colspan="3">Operating Time</th>
+              </tr>
+              <tr>
+                <th>Open torque % of Full Torque</th>
+                <th>Act setting for Open (Limit Setting)</th>
+                <th>Close torque % of Full Torque</th>
+                <th>Act setting for Close (Limit Setting)</th>
+                <th>As Per GAD / Production order</th>
+                <th>Measured Time (Sec) Open to Close</th>
+                <th>Measured Time (Sec) Close to Open</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><input type="text" id="openingFullTorque"></td>
+                <td><input type="text" id="openingTorqueActSetting"></td>
+                <td><input type="text" id="closingFullTorque"></td>
+                <td><input type="text" id="closingTorqueActSetting"></td>
+                <td><input type="text" id="operatingTimeGAD"></td>
+                <td><input type="text" id="operatingTimeOpenToClose"></td>
+                <td><input type="text" id="operatingTimeCloseToOpen"></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="row g-2">
+          <div class="col-6">
+            <div class="form-group mb-1">
+              <label>Valve test media drained completely</label>
+              <select id="mediaDrained">
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+              </select>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="form-group mb-1">
+              <label>Vent Bleeder Allen screw securely tightened</label>
+              <select id="bleederTightened">
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="torque-section-title mt-2">Gauge Details</div>
+        <div class="row g-2">
+          <div class="col-6">
+            <div class="form-group mb-1">
+              <label>Hydro Gauge 1</label>
+              <select id="hydroGauge1">
+                <option value="" disabled selected>Select Hydro Gauge 1</option>
+                <option value="N/A">N/A</option>
+              </select>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="form-group mb-1">
+              <label>Hydro Gauge 2</label>
+              <select id="hydroGauge2">
+                <option value="" disabled selected>Select Hydro Gauge 2</option>
+                <option value="N/A">N/A</option>
+              </select>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="form-group mb-1">
+              <label>Air Gauge 1</label>
+              <select id="airGauge1">
+                <option value="" disabled selected>Select Air Gauge 1</option>
+                <option value="N/A">N/A</option>
+              </select>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="form-group mb-1">
+              <label>Air Gauge 2</label>
+              <select id="airGauge2">
+                <option value="" disabled selected>Select Air Gauge 2</option>
+                <option value="N/A">N/A</option>
+              </select>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="form-group mb-1">
+              <label>Hydro Transducer</label>
+              <select id="hydroTransducer">
+                <option value="" disabled selected>Select Hydro Transducer</option>
+                <option value="N/A">N/A</option>
+              </select>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="form-group mb-1">
+              <label>Air Transducer</label>
+              <select id="airTransducer">
+                <option value="" disabled selected>Select Air Transducer</option>
+                <option value="N/A">N/A</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="torque-modal-footer">
+        <button class="btn-cancel" onclick="closeTorqueModal()">Cancel</button>
+        <button class="btn-save" onclick="saveAndComplete()">Save & Complete</button>
+      </div>
+    </div>
+  </div>
+
+</body>
+
+</html>

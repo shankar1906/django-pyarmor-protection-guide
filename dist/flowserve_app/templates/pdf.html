@@ -1,0 +1,487 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Report – {{ report_no }}</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        /* ── A4 Page ── */
+        @page {
+            size: A4 portrait;
+            margin: 0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 11px;
+            color: #000;
+            background: #e0e0e0;
+        }
+
+        @media print {
+            body {
+                background: #fff;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+
+            .report-page {
+                box-shadow: none;
+                margin: 0;
+            }
+        }
+
+        /* ── Download button ── */
+        .header-actions {
+            position: fixed;
+            top: 16px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .btn-download {
+            background: #0056b3;
+            color: #fff;
+            border: none;
+            padding: 10px 22px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        /* ── Page Container ── */
+        .report-page {
+            width: 210mm;
+            min-height: 296mm;
+            margin: 12px auto;
+            background: #fff;
+            padding: 7mm 8mm;
+            box-shadow: 0 0 14px rgba(0, 0, 0, .2);
+            page-break-after: always;
+        }
+
+        .report-page:last-child {
+            page-break-after: auto;
+        }
+
+        /* ── Global table reset ── */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        /* ── SECTION 1: Report Number Row ── */
+        .rpt-row td {
+            border: 1px solid #000;
+            padding: 3px 6px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        .rpt-row .val {
+            font-weight: normal;
+        }
+
+        /* ── SECTION 2: Header / Logo + Valve Info ── */
+        .header-table {
+            margin-top: 5px;
+        }
+
+        .header-table td {
+            border: 1px solid #000;
+            padding: 4px 6px;
+            font-size: 10px;
+            vertical-align: middle;
+        }
+
+        .logo-cell {
+            width: 22%;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .logo-cell img {
+            max-width: 90%;
+            max-height: 50px;
+            display: block;
+            margin: 0 auto 3px;
+        }
+
+        .logo-addr {
+            font-size: 7px;
+            line-height: 1.3;
+            font-weight: normal;
+        }
+
+        .lbl {
+            font-weight: bold;
+        }
+
+        .val {
+            font-weight: normal;
+        }
+
+        /* ── SECTION 3: Test Meta Info (plain text, no borders) ── */
+        .test-meta {
+            margin-top: 6px;
+            margin-bottom: 2px;
+        }
+
+        .test-meta-row {
+            display: flex;
+            gap: 0 30px;
+            flex-wrap: nowrap;
+            margin-bottom: 2px;
+            font-size: 10.5px;
+        }
+
+        .meta-item {
+            white-space: nowrap;
+        }
+
+        .meta-item strong {
+            font-weight: bold;
+        }
+
+        /* ── SECTION 4: Graph (large, no outer border) ── */
+        .graph-section {
+            margin-top: 6px;
+            margin-bottom: 6px;
+            text-align: center;
+        }
+
+        .graph-title {
+            font-weight: bold;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .graph-section img {
+            width: 100%;
+            max-height: 320px;
+            object-fit: contain;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .no-graph {
+            height: 180px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            font-size: 12px;
+            border: 1px dashed #bbb;
+            background: #fafafa;
+        }
+
+        /* ── SECTION 5: Orientation Table ── */
+        .orient-table {
+            margin-top: 4px;
+        }
+
+        .orient-table th,
+        .orient-table td {
+            border: 1px solid #000;
+            text-align: center;
+            padding: 4px;
+            font-size: 10px;
+            height: 36px;
+            vertical-align: middle;
+        }
+
+        .orient-table th {
+            font-weight: bold;
+            background: #fff;
+        }
+
+        .orient-table img {
+            max-height: 30px;
+        }
+
+        /* ── SECTION 6: Gauge Calibration ── */
+        .sub-title {
+            text-align: center;
+            font-weight: bold;
+            font-size: 11px;
+            text-transform: uppercase;
+            margin: 6px 0 3px;
+        }
+
+        .calib-table th,
+        .calib-table td {
+            border: 1px solid #000;
+            text-align: center;
+            padding: 4px;
+            font-size: 10px;
+            height: 24px;
+            vertical-align: middle;
+        }
+
+        .calib-table th {
+            font-weight: bold;
+            background: #fff;
+        }
+
+        /* ── SECTION 7: Signatures ── */
+        .footer-sigs {
+            margin-top: 24px;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 20px;
+        }
+
+        .sig-label {
+            font-weight: bold;
+            font-size: 11px;
+            margin-bottom: 4px;
+        }
+
+        .sig-name {
+            font-size: 11px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header-actions no-print">
+        <button class="btn-download" onclick="downloadPDF()">⬇ DOWNLOAD PDF</button>
+    </div>
+
+    <div id="report-content">
+        <div class="report-page">
+
+            <!-- SECTION 1: Report Number Row -->
+            <table class="rpt-row" style="margin-bottom:5px;">
+                <colgroup>
+                    <col style="width:22%;">
+                    <col style="width:16%;">
+                    <col style="width:22%;">
+                    <col style="width:16%;">
+                    <col style="width:24%;">
+                </colgroup>
+                <tr>
+                    <td>Report No : <span class="val">{{ report_no }}</span></td>
+                    <td class="lbl">Sale Order NO.</td>
+                    <td class="val">{{ sale_order_no }}</td>
+                    <td class="lbl">Procedure No.</td>
+                    <td class="val">{{ procedure_no }}</td>
+                </tr>
+            </table>
+
+            <!-- SECTION 2: Logo + Valve Details -->
+            <table class="header-table">
+                <colgroup>
+                    <col style="width:22%;">
+                    <col style="width:19%;">
+                    <col style="width:20%;">
+                    <col style="width:19%;">
+                    <col style="width:20%;">
+                </colgroup>
+                <tr>
+                    <td rowspan="4" class="logo-cell">
+                        <img src="{% static 'images/icons/flowserve_logo.png' %}" alt="FLOWSERVE">
+                        <div class="logo-addr">
+                            Flowserve India Controls Pvt Ltd,<br>
+                            B8 CMDA Industrial Area, Maraimalai Nagar<br>603209
+                        </div>
+                    </td>
+                    <td class="lbl">Valve Type</td>
+                    <td class="val">{{ valve_type }}</td>
+                    <td class="lbl">Date &amp; Shift</td>
+                    <td class="val">{{ date_shift }}</td>
+                </tr>
+                <tr>
+                    <td class="lbl">Valve Size &amp; Class</td>
+                    <td class="val">{{ size_class }}</td>
+                    <td class="lbl">Tested By</td>
+                    <td class="val">{{ tested_by }}</td>
+                </tr>
+                <tr>
+                    <td class="lbl">Shell Material</td>
+                    <td class="val">{{ shell_material }}</td>
+                    <td class="lbl">Body Ht No / Mpi No</td>
+                    <td class="val">{{ body_ht_no }}</td>
+                </tr>
+                <tr>
+                    <td class="lbl">Valve Sr. No &amp; Test Bench Sr. No</td>
+                    <td class="val">{{ serial_no }} &amp; {{ test_bench_no }}</td>
+                    <td class="lbl">Bonnet Ht No / Mpi No</td>
+                    <td class="val">{{ bonnet_ht_no }}</td>
+                </tr>
+            </table>
+
+            {% for test in tests %}
+            <!-- SECTION 3: Test Meta Info (plain text lines, no borders) -->
+            <div class="test-meta">
+                <div class="test-meta-row">
+                    <span class="meta-item"><strong>Test Type :</strong> {{ test.test_type }}</span>
+                    <span class="meta-item"><strong>Set Time :</strong> {{ test.set_time }}</span>
+                    <span class="meta-item"><strong>Set Pressure :</strong> {{ test.set_pressure }}</span>
+                    <span class="meta-item"><strong>Observed Pressure :</strong> {{ test.obs_pressure }}</span>
+                </div>
+                <div class="test-meta-row">
+                    <span class="meta-item"><strong>Standard :</strong> {{ standard }}</span>
+                    <span class="meta-item"><strong>Observed Time :</strong> {{ test.obs_time }}</span>
+                    <span class="meta-item"><strong>Test Result :</strong> {{ test.test_result }}</span>
+                </div>
+            </div>
+
+            <!-- SECTION 4: Graph (large) -->
+            <div class="graph-section">
+                {% if test.graph_image_base64 %}
+                <img src="{{ test.graph_image_base64 }}" alt="Pressure Graph">
+                {% else %}
+                <div class="no-graph">No graph data available for this test</div>
+                {% endif %}
+            </div>
+            {% endfor %}
+
+            <!-- Grouping footer tables to avoid page break inside -->
+            <div style="page-break-inside: avoid;">
+
+                <!-- SECTION 5: Orientation Table -->
+                <table class="orient-table">
+                    <thead>
+                        <tr>
+                            <th style="width:25%;">Test Orientation</th>
+                            <th style="width:25%;">Illustration</th>
+                            <th style="width:25%;">Valve Bore Orientation</th>
+                            <th style="width:25%;">Stem Position</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for test in tests %}
+                        {% ifchanged test.test_orientation test.valve_bore_orientation test.stem_position %}
+                        <tr>
+                            <td>{{ test.test_orientation|default:"&nbsp;" }}</td>
+                            <td>
+                                {% if illustration_url %}
+                                <img src="{% static illustration_url %}" alt="Illustration">
+                                {% else %}
+                                &nbsp;
+                                {% endif %}
+                            </td>
+                            <td>{{ test.valve_bore_orientation|default:"&nbsp;" }}</td>
+                            <td>{{ test.stem_position|default:"&nbsp;" }}</td>
+                        </tr>
+                        {% endifchanged %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <!-- SECTION 6: Gauge Calibration Details -->
+                <div class="sub-title">GAUGE CALIBRATION DETAILS</div>
+                <table class="calib-table">
+                    <thead>
+                        <tr>
+                            <th style="width:25%;">S.NO</th>
+                            <th style="width:40%;">Instrument Type</th>
+                            <th style="width:35%;">Due Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if calibration_details %}
+                        {% for item in calibration_details %}
+                        <tr>
+                            <td>{{ item.serial_no }}</td>
+                            <td>{{ item.instrument_type }}</td>
+                            <td>{{ item.due_date }}</td>
+                        </tr>
+                        {% endfor %}
+                        {% else %}
+                        <!-- Fallback for old records without explicit gauge selection -->
+                        {% for test in tests %}
+                        {% ifchanged test.gauge_data.serial_no %}
+                        {% if test.gauge_data %}
+                        <tr>
+                            <td>{{ test.gauge_data.serial_no }}</td>
+                            <td>{{ test.gauge_data.instrument_type }}</td>
+                            <td>{{ test.gauge_data.due_date }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td>&nbsp;</td>
+                            <td>Transducer</td>
+                            <td>&nbsp;</td>
+                        </tr>
+                        {% endif %}
+                        {% endifchanged %}
+                        {% endfor %}
+                        {% endif %}
+                    </tbody>
+                </table>
+
+                <!-- SECTION 7: Signatures -->
+                <div class="footer-sigs">
+                    <div>
+                        <div class="sig-label">Tested By</div>
+                        <div class="sig-name">{{ tested_by }}</div>
+                    </div>
+                    <div style="text-align:right;">
+                        <div class="sig-label">Approved By</div>
+                        <div class="sig-name">&nbsp;</div>
+                    </div>
+                </div>
+
+            </div> <!-- End page-break-inside avoid container -->
+
+        </div><!-- end .report-page -->
+    </div>
+
+    <script>
+        window.onload = function () {
+            {% if download %}
+            downloadPDF();
+            {% endif %}
+        };
+
+        async function downloadPDF() {
+            const element = document.getElementById('report-content');
+            const pages = element.querySelectorAll('.report-page');
+            pages.forEach(p => { p.style.boxShadow = 'none'; p.style.margin = '0'; });
+
+            const opt = {
+                margin: 0,
+                filename: 'Report_{{ report_no }}.pdf',
+                image: { type: 'jpeg', quality: 1.0 },
+                html2canvas: {
+                    scale: 2,
+                    useCORS: true,
+                    letterRendering: true,
+                    scrollX: 0,
+                    scrollY: 0,
+                    windowWidth: 794
+                },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak: { mode: ['css', 'legacy'] }
+            };
+
+            try {
+                await html2pdf().set(opt).from(element).save();
+            } finally {
+                pages.forEach(p => { p.style.boxShadow = ''; p.style.margin = ''; });
+            }
+        }
+    </script>
+
+</body>
+
+</html>

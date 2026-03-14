@@ -1,0 +1,769 @@
+{% extends 'base_new.html' %}
+{% load static %}
+
+{% block header_title %}Form Data 2{% endblock %}
+
+{% block content %}
+<style>
+  /* ===== Container & Scroll ===== */
+  .table-container-wrapper {
+    height: calc(100vh - 155px);
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  .card {
+    border: none;
+    border-radius: 0;
+    background: white;
+    box-shadow: none;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+  }
+
+  /* ===== Hint Bar ===== */
+  .edit-hint {
+    padding: 0.5rem 1rem;
+    background: #e7f3ff;
+    color: #0066cc;
+    font-size: 0.8125rem;
+    border-bottom: 1px solid #b3d9ff;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .edit-hint .close-btn {
+    background: transparent;
+    border: none;
+    color: #0066cc;
+    font-size: 1.125rem;
+    cursor: pointer;
+    margin-left: auto;
+    line-height: 1;
+  }
+
+  /* ===== Custom Filter Row (Search Toggle + Actions) ===== */
+  .custom-filter-row {
+    padding: 0.75rem 1rem;
+    background: white;
+    border-bottom: 1px solid #dee2e6;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .left-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  /* Search Toggle Styles */
+  .search-toggle-container {
+    position: relative;
+  }
+
+  .search-input-wrapper {
+    display: flex;
+    align-items: center;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 20px;
+    padding: 2px;
+    width: 36px;
+    height: 36px;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    overflow: hidden;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  }
+
+  .search-input-wrapper.active {
+    width: 300px;
+    background: white;
+    border-color: #0b1a35;
+    box-shadow: 0 4px 6px -1px rgba(11, 26, 53, 0.2);
+  }
+
+  .search-icon-btn {
+    width: 30px;
+    height: 30px;
+    background: white;
+    border: none;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #718096;
+    cursor: pointer;
+    flex-shrink: 0;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s;
+  }
+
+  .search-input-wrapper.active .search-icon-btn {
+    background: transparent;
+    color: #0b1a35;
+    box-shadow: none;
+    cursor: default;
+  }
+
+  .search-input-wrapper input {
+    flex: 1;
+    border: none;
+    outline: none;
+    background: transparent;
+    padding: 0 12px;
+    font-size: 0.9rem;
+    color: #2d3748;
+    min-width: 0;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease 0.1s;
+  }
+
+  .search-input-wrapper.active input {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .search-close-btn {
+    width: 30px;
+    height: 30px;
+    background: transparent;
+    border: none;
+    color: #a0aec0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border-radius: 50%;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+
+  .search-close-btn:hover {
+    color: #e53e3e;
+    background: rgba(229, 62, 62, 0.1);
+  }
+
+  .search-input-wrapper.active .search-close-btn {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .bulk-delete-btn {
+    padding: 0.5rem 1rem;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    color: #e53e3e;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .bulk-delete-btn:hover:not(:disabled) {
+    background: #fee2e2;
+    border-color: #e53e3e;
+  }
+
+  .bulk-delete-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    color: #a0aec0;
+  }
+
+  /* ===== Table Styling ===== */
+  .table-responsive {
+    flex: 1;
+    overflow: auto;
+    background: white;
+  }
+
+  .table thead th {
+    position: sticky;
+    top: 0;
+    background: #e9ecef;
+    color: black;
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    padding: 1rem 0.75rem;
+    border-bottom: 2px solid #edf2f7;
+    z-index: 10;
+    text-align: center;
+  }
+
+  .table tbody td {
+    padding: 0.6rem;
+    vertical-align: middle;
+    border: 1px solid #e5e7eb;
+    text-align: center;
+    font-size: 0.9rem;
+  }
+
+  .table tbody tr:hover {
+    background-color: #f8fafc;
+    cursor: pointer;
+  }
+
+  /* Checkbox styling */
+  input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: #0b1a35;
+  }
+
+  /* ===== Pagination & Footer ===== */
+  .custom-pagination-wrapper {
+    background: white;
+    padding: 0.75rem 1.5rem;
+    border-top: 1px solid #dee2e6;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .pagination-btn {
+    min-width: 36px;
+    height: 36px;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #dee2e6;
+    background: white;
+    color: #495057;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.875rem;
+  }
+
+  .pagination-btn.active {
+    background: #0b1a35;
+    color: white;
+    border-color: #0b1a35;
+  }
+
+  /* ===== Modal Containers ===== */
+  .field-container {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 1.25rem;
+    margin-bottom: 1.25rem;
+    position: relative;
+  }
+
+  .remove-field-btn {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    background: #fee2e2;
+    color: #e53e3e;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+  }
+
+  .remove-field-btn:hover {
+    background: #e53e3e;
+    color: white;
+  }
+
+  .toggle-switch {
+    width: 52px;
+    height: 28px;
+    min-width: 52px;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background: #f1f5f9;
+    border-radius: 100px;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    outline: none;
+    flex-shrink: 0;
+    margin: 0;
+    border: 1px solid #e2e8f0;
+    display: inline-block;
+    vertical-align: middle;
+    box-sizing: border-box;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.06);
+    overflow: visible; /* Ensure shadow/thumb don't clip */
+  }
+
+  .toggle-switch:checked {
+    background: #f1f5f9; /* Keep track light even when checked */
+    border-color: #cbd5e1;
+  }
+
+  .toggle-switch::before {
+    content: '';
+    width: 22px;
+    height: 22px;
+    background: linear-gradient(135deg, #ff8a00, #ff005c);
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    left: 2px;
+    transform: translateY(-50%);
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 2px 8px rgba(255, 0, 92, 0.4); /* Enhanced Glow */
+    z-index: 1;
+  }
+
+  .toggle-switch:checked::before {
+    transform: translate(24px, -50%);
+  }
+
+  .status-toggle-container {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    height: 38px;
+    padding: 0;
+    margin-top: 4px;
+  }
+
+
+
+  .btn-brand-red {
+    background-color: #2B3B64 !important;
+    border-color: #2B3B64 !important;
+    color: white !important;
+  }
+  .btn-brand-red:hover {
+    background-color: #c9162e !important;
+    border-color: #c9162e !important;
+  }
+</style>
+
+<div class="container-fluid table-container-wrapper">
+  <div class="card">
+    <!-- Hint Bar -->
+    <div class="edit-hint" id="editHint">
+      <div>💡 Tip: Click on any row to edit • Select checkbox(es) and click Delete to remove</div>
+      <button class="close-btn" onclick="document.getElementById('editHint').style.display='none'">&times;</button>
+    </div>
+
+    <!-- Filter/Action Row -->
+    <div class="custom-filter-row">
+      <div class="left-controls">
+        <button class="bulk-delete-btn" id="bulkDeleteBtn" onclick="handleBulkDelete()" disabled>
+          <i class="fas fa-trash-alt"></i> Delete
+        </button>
+      </div>
+
+      <div class="d-flex align-items-center gap-2">
+        <div class="search-input-wrapper" id="searchInputWrapper">
+          <button class="search-icon-btn" id="searchToggleBtn" title="Search">
+            <i class="fas fa-search"></i>
+          </button>
+          <input type="text" id="customSearchInput" placeholder="Search Valve Types...">
+          <button class="search-close-btn" id="searchCloseBtn" title="Clear Search">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <button class="btn btn-primary d-flex align-items-center gap-2" style="background: #0b1a35;" onclick="openAddModal()">
+          <i class="fas fa-plus"></i>Add
+        </button>
+      </div>
+    </div>
+
+    <!-- Main Table -->
+    <div class="table-responsive">
+      <table class="table no-datatables" id="mainTable">
+        <thead>
+          <tr>
+            <th style="width: 40px;"><input type="checkbox" id="selectAll"></th>
+            <th style="width: 80px;">S.NO</th>
+            <th>VALVE TYPE NAME</th>
+            <th style="width: 250px;">CONFIGURED FIELDS</th>
+          </tr>
+        </thead>
+        <tbody id="mainTableBody">
+          <tr><td colspan="4">Loading application data...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Footer Pagination -->
+    <div class="custom-pagination-wrapper" id="paginationWrapper"></div>
+  </div>
+</div>
+
+<!-- Configuration Modal -->
+<div class="modal fade" id="formModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold" id="modalTitle">Configure Form Data 2</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+        <div class="mb-4">
+          <label class="form-label fw-bold">Valve Type <span class="text-danger">*</span></label>
+          <select id="valveTypeSelect" class="form-select">
+            <option value="">-- Select Valve Type --</option>
+            {% for vt in valve_types %}
+            <option value="{{ vt.code }}">{{ vt.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h6 class="mb-0 fw-bold">Field Configurations</h6>
+        </div>
+
+        <div id="fieldsContainer"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light border" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-success px-4" onclick="saveConfiguration()">Save Changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Action Modal -->
+<div class="modal fade" id="actionModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body text-center p-4">
+                <div class="mb-3"><i class="fas fa-exclamation-triangle text-warning fs-1"></i></div>
+                <h5 class="modal-title mb-3" id="actionModalTitle">Action</h5>
+                <p class="text-muted mb-4">Choose an action for this valve type configuration</p>
+                <div class="d-flex justify-content-center gap-3">
+                    <button class="btn btn-light px-4 border" data-bs-dismiss="modal">Cancel</button>
+                    <button class="btn btn-brand-red px-4" id="deleteActionBtn">Delete</button>
+                    <button class="btn btn-success px-4" id="updateActionBtn">Update</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'scripts/dialog-manager.js' %}"></script>
+<script>
+  let allRecords = [];
+  let selectedIds = new Set();
+  let itemsPerPage = 10;
+  let currentPage = 1;
+  let searchQuery = '';
+  let isEditMode = false;
+
+  const formDataOptions = [
+    {% for opt in form_data_options %}
+    { id: {{ opt.id }}, name: "{{ opt.name|escapejs }}" },
+    {% endfor %}
+  ];
+  const dataTypes = ["Integer", "varchar", "boolean", "float", "double", "list", "tuple", "Dropdown"];
+
+  document.addEventListener('DOMContentLoaded', () => {
+    loadData();
+    initSearch();
+    document.getElementById('selectAll').addEventListener('change', toggleSelectAll);
+  });
+
+  function initSearch() {
+    const wrapper = document.getElementById('searchInputWrapper');
+    const toggleBtn = document.getElementById('searchToggleBtn');
+    const closeBtn = document.getElementById('searchCloseBtn');
+    const input = document.getElementById('customSearchInput');
+
+    toggleBtn.addEventListener('click', () => { wrapper.classList.add('active'); input.focus(); });
+    closeBtn.addEventListener('click', () => {
+      input.value = ''; searchQuery = ''; wrapper.classList.remove('active');
+      currentPage = 1; renderTable();
+    });
+    input.addEventListener('keyup', (e) => {
+      searchQuery = e.target.value.trim().toLowerCase();
+      currentPage = 1; renderTable();
+    });
+  }
+
+  function loadData() {
+    fetch('/api/formdata2/list/')
+      .then(r => r.json())
+      .then(data => {
+        allRecords = data.records || [];
+        selectedIds.clear();
+        updateBulkDeleteBtn();
+        renderTable();
+      });
+  }
+
+  function renderTable() {
+    const tbody = document.getElementById('mainTableBody');
+    const filtered = allRecords.filter(r => 
+      r.name.toLowerCase().includes(searchQuery)
+    );
+
+    const totalPages = Math.ceil(filtered.length / itemsPerPage);
+    if (currentPage > totalPages) currentPage = totalPages || 1;
+    const start = (currentPage - 1) * itemsPerPage;
+    const pageData = filtered.slice(start, start + itemsPerPage);
+
+    tbody.innerHTML = '';
+    if (pageData.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="4" class="py-5 text-muted">No configurations found</td></tr>';
+    } else {
+      pageData.forEach((r, idx) => {
+        const tr = document.createElement('tr');
+        tr.onclick = (e) => {
+            if (e.target.type !== 'checkbox') openActionModal(r);
+        };
+        const isChecked = selectedIds.has(String(r.type_id));
+        tr.innerHTML = `
+          <td><input type="checkbox" class="row-check" value="${r.type_id}" ${isChecked ? 'checked' : ''} onclick="event.stopPropagation(); handleRowCheck(this)"></td>
+          <td>${start + idx + 1}</td>
+          <td class="text-start">${r.name}</td>
+          <td><i class="fa-solid fa-cog text-primary me-2"></i> Configured</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+    renderPagination(totalPages);
+  }
+
+  function renderPagination(total) {
+    const wrapper = document.getElementById('paginationWrapper');
+    wrapper.innerHTML = '';
+    if (total <= 1) return;
+
+    for (let i = 1; i <= total; i++) {
+        const btn = document.createElement('button');
+        btn.className = `pagination-btn ${i === currentPage ? 'active' : ''}`;
+        btn.textContent = i;
+        btn.onclick = () => { currentPage = i; renderTable(); };
+        wrapper.appendChild(btn);
+    }
+  }
+
+  function handleRowCheck(cb) {
+    if (cb.checked) selectedIds.add(cb.value);
+    else selectedIds.delete(cb.value);
+    updateBulkDeleteBtn();
+    
+    // Check if all on page are checked to update header
+    const allOnPage = document.querySelectorAll('.row-check');
+    document.getElementById('selectAll').checked = Array.from(allOnPage).every(c => c.checked);
+  }
+
+  function toggleSelectAll(e) {
+    const checks = document.querySelectorAll('.row-check');
+    checks.forEach(c => {
+      c.checked = e.target.checked;
+      if (e.target.checked) selectedIds.add(c.value);
+      else selectedIds.delete(c.value);
+    });
+    updateBulkDeleteBtn();
+  }
+
+  function updateBulkDeleteBtn() {
+    document.getElementById('bulkDeleteBtn').disabled = selectedIds.size === 0;
+  }
+
+  function openActionModal(record) {
+    document.getElementById('actionModalTitle').textContent = `Action for "${record.name}"`;
+    document.getElementById('deleteActionBtn').onclick = () => {
+        bootstrap.Modal.getInstance(document.getElementById('actionModal')).hide();
+        confirmDeleteValve(record.type_id, record.name);
+    };
+    document.getElementById('updateActionBtn').onclick = () => {
+        bootstrap.Modal.getInstance(document.getElementById('actionModal')).hide();
+        openEditModal(record);
+    };
+    new bootstrap.Modal(document.getElementById('actionModal')).show();
+  }
+
+  function openAddModal() {
+    isEditMode = false;
+    document.getElementById('modalTitle').textContent = 'Configure New Valve Type';
+    document.getElementById('valveTypeSelect').value = '';
+    document.getElementById('valveTypeSelect').disabled = false;
+    document.getElementById('fieldsContainer').innerHTML = '';
+    
+    // Default to adding all available field options
+    formDataOptions.forEach(opt => addFieldConfig(null, opt.id));
+    new bootstrap.Modal(document.getElementById('formModal')).show();
+  }
+
+  function openEditModal(record) {
+    isEditMode = true;
+    document.getElementById('modalTitle').textContent = `Edit Configuration: ${record.name}`;
+    document.getElementById('valveTypeSelect').value = record.type_id;
+    document.getElementById('valveTypeSelect').disabled = true;
+    
+    DialogManager.loading("Loading Details...", "Fetching your configuration");
+    fetch(`/api/formdata2/get/${record.type_id}/`)
+      .then(r => r.json())
+      .then(data => {
+        DialogManager.closeLoading();
+        const container = document.getElementById('fieldsContainer');
+        container.innerHTML = '';
+        
+        // Show all available options, filling data where it exists
+        formDataOptions.forEach(opt => {
+            const existing = (data.fields || []).find(f => f.form_data_id == opt.id);
+            addFieldConfig(existing, opt.id);
+        });
+        new bootstrap.Modal(document.getElementById('formModal')).show();
+      });
+  }
+
+  function addFieldConfig(data = null, defaultOptionId = null) {
+    const container = document.getElementById('fieldsContainer');
+    const div = document.createElement('div');
+    const selectedId = data ? data.form_data_id : defaultOptionId;
+    const optName = formDataOptions.find(o => o.id == selectedId)?.name || '';
+    
+    div.className = 'field-container';
+    const fieldId = `field_${selectedId}`;
+    div.innerHTML = `
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label small fw-bold">Field Name</label>
+          <input type="text" class="form-control form-control-sm field-name" value="${optName}" readonly>
+          <input type="hidden" class="field-serial" value="${selectedId}">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small fw-bold">DataType</label>
+          <select class="form-select form-select-sm field-datatype">
+            <option value="">-- Select DataType --</option>
+            ${dataTypes.map(dt => `<option value="${dt}" ${data && data.datatype == dt ? 'selected' : ''}>${dt}</option>`).join('')}
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small fw-bold d-block">Mandatory Field</label>
+          <div class="d-flex align-items-center gap-3 mt-2">
+            <div class="form-check m-0">
+              <input class="form-check-input mandatory-radio" type="radio" id="${fieldId}_yes" name="mandatory_${selectedId}" value="yes" ${data && data.mandatory == 'yes' ? 'checked' : ''}>
+              <label class="form-check-label small" for="${fieldId}_yes">Yes</label>
+            </div>
+            <div class="form-check m-0">
+              <input class="form-check-input mandatory-radio" type="radio" id="${fieldId}_no" name="mandatory_${selectedId}" value="no" ${!data || data.mandatory == 'no' ? 'checked' : ''}>
+              <label class="form-check-label small" for="${fieldId}_no">No</label>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small fw-bold d-block">Status</label>
+          <div class="status-toggle-container">
+            <input type="checkbox" class="toggle-switch status-toggle" ${data && data.toggle == 1 ? 'checked' : ''}>
+          </div>
+        </div>
+      </div>
+    `;
+    container.appendChild(div);
+  }
+
+  function saveConfiguration() {
+    const vtId = document.getElementById('valveTypeSelect').value;
+    if (!vtId) return DialogManager.toast({ type: 'error', message: "Please select a Valve Type" });
+
+    // Validation for duplicate valve type in "Add" mode
+    if (!isEditMode) {
+        const alreadyExists = allRecords.some(r => String(r.type_id) === String(vtId));
+        if (alreadyExists) {
+            return DialogManager.toast({ type: 'error', message: "This Valve Type is already configured. Please use Edit instead." });
+        }
+    }
+
+    const configs = [];
+    document.querySelectorAll('.field-container').forEach(div => {
+      const serial = div.querySelector('.field-serial').value;
+      const name = div.querySelector('.field-name').value;
+      const type = div.querySelector('.field-datatype').value;
+      const mandatory = div.querySelector('.mandatory-radio:checked').value;
+      const toggle = div.querySelector('.status-toggle').checked ? 1 : 0;
+      if (serial && type) configs.push({ form_data_id: serial, form_name: name, datatype: type, mandatory: mandatory, toggle: toggle });
+    });
+
+    if (configs.length === 0) return DialogManager.toast({ type: 'error', message: "Add at least one field configuration" });
+
+    DialogManager.loading("Saving...", "Updating database");
+    fetch('/api/formdata2/save/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+      body: JSON.stringify({ valve_type_id: vtId, items: configs, is_update: isEditMode })
+    })
+    .then(r => r.json())
+    .then(data => {
+      DialogManager.closeLoading();
+      if (data.error) DialogManager.toast({ type: 'error', message: data.error });
+      else {
+        DialogManager.toast({ type: 'success', message: data.message });
+        bootstrap.Modal.getInstance(document.getElementById('formModal')).hide();
+        loadData();
+      }
+    });
+  }
+
+  function handleBulkDelete() {
+    DialogManager.confirm({
+      title: "Bulk Delete",
+      message: `Delete configurations for ${selectedIds.size} selected valve types?`,
+      onConfirm: () => {
+        DialogManager.loading("Deleting...", "Clearing settings");
+        fetch('/api/formdata2/bulk_delete/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+          body: JSON.stringify({ ids: Array.from(selectedIds) })
+        })
+        .then(r => r.json())
+        .then(data => {
+          DialogManager.closeLoading();
+          loadData();
+          DialogManager.toast({ type: 'success', message: "Bulk deletion complete" });
+        });
+      }
+    });
+  }
+
+  function confirmDeleteValve(vtId, name) {
+    DialogManager.confirm({
+      title: "Confirm Deletion",
+      message: `Are you sure you want to delete all field configurations for "${name}"?`,
+      onConfirm: () => {
+        DialogManager.loading("Deleting...", "Removing records");
+        fetch(`/api/formdata2/delete_valve/${vtId}/`, {
+          method: 'POST',
+          headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+        })
+        .then(r => r.json())
+        .then(data => {
+          DialogManager.closeLoading();
+          loadData();
+          DialogManager.toast({ type: 'success', message: "Configuration removed" });
+        });
+      }
+    });
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,461 @@
+/* ============================================================
+   EXPORT DIALOG STYLES
+   ============================================================ */
+
+/* Modal Overlay */
+.export-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Modal Container */
+.export-modal {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  max-width: 500px;
+  width: 90%;
+  animation: slideUp 0.4s ease-out;
+  overflow: hidden;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Modal Header */
+.export-modal-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 25px;
+  text-align: center;
+  border-bottom: none;
+}
+
+.export-modal-header h2 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.export-modal-header .icon {
+  font-size: 28px;
+}
+
+.export-modal-header p {
+  margin: 8px 0 0 0;
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+/* Modal Body */
+.export-modal-body {
+  padding: 30px;
+}
+
+.export-description {
+  text-align: center;
+  margin-bottom: 25px;
+  color: #555;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* Export Options Grid */
+.export-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 480px) {
+  .export-options {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Export Option Card */
+.export-option {
+  position: relative;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.export-option-btn {
+  width: 100%;
+  padding: 20px;
+  border: 2px solid #e0e0e0;
+  border-radius: 10px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+}
+
+.export-option-btn:hover {
+  border-color: #667eea;
+  background: #f8f9ff;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+}
+
+.export-option-btn.active {
+  border-color: #667eea;
+  background: #667eea;
+  color: white;
+}
+
+.export-option-btn .icon {
+  font-size: 24px;
+}
+
+.export-option-btn .label {
+  font-weight: 600;
+}
+
+.export-option-btn .desc {
+  font-size: 12px;
+  opacity: 0.7;
+  font-weight: 400;
+}
+
+.export-option-btn.active .desc {
+  opacity: 0.9;
+}
+
+/* Full Width Option */
+.export-options-full {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.export-option-full-btn {
+  width: 100%;
+  padding: 16px 20px;
+  border: 2px solid #e0e0e0;
+  border-radius: 10px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  font-size: 15px;
+  font-weight: 500;
+  color: #333;
+}
+
+.export-option-full-btn:hover {
+  border-color: #667eea;
+  background: #f8f9ff;
+  transform: translateX(5px);
+}
+
+.export-option-full-btn .icon {
+  font-size: 20px;
+  min-width: 24px;
+}
+
+.export-option-full-btn .content {
+  flex: 1;
+  text-align: left;
+}
+
+.export-option-full-btn .title {
+  font-weight: 600;
+  display: block;
+}
+
+.export-option-full-btn .subtitle {
+  font-size: 12px;
+  opacity: 0.6;
+  margin-top: 2px;
+}
+
+/* Color Variants */
+.export-excel {
+  color: #207245;
+}
+
+.export-excel:hover {
+  border-color: #207245;
+  background: #f0f7f4;
+}
+
+.export-excel.active {
+  background: #207245;
+  color: white;
+}
+
+.export-csv {
+  color: #0066cc;
+}
+
+.export-csv:hover {
+  border-color: #0066cc;
+  background: #f0f5ff;
+}
+
+.export-csv.active {
+  background: #0066cc;
+  color: white;
+}
+
+.export-pdf {
+  color: #d32f2f;
+}
+
+.export-pdf:hover {
+  border-color: #d32f2f;
+  background: #fff0f0;
+}
+
+.export-pdf.active {
+  background: #d32f2f;
+  color: white;
+}
+
+/* Modal Footer */
+.export-modal-footer {
+  padding: 20px 30px;
+  background: #f8f9fa;
+  border-top: 1px solid #e0e0e0;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+/* Buttons */
+.export-btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.export-btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.export-btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+.export-btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.export-btn-secondary {
+  background: #e0e0e0;
+  color: #333;
+}
+
+.export-btn-secondary:hover {
+  background: #d0d0d0;
+}
+
+/* Loading State */
+.export-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: #667eea;
+  font-weight: 500;
+}
+
+.export-spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #f3f3f3;
+  border-top: 2px solid #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Success State */
+.export-success {
+  text-align: center;
+  padding: 20px;
+  color: #207245;
+}
+
+.export-success .icon {
+  font-size: 48px;
+  margin-bottom: 10px;
+  animation: scaleIn 0.5s ease-out;
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+.export-success h3 {
+  margin: 10px 0;
+  font-size: 18px;
+}
+
+.export-success p {
+  margin: 5px 0;
+  font-size: 14px;
+  opacity: 0.8;
+}
+
+/* Info Box */
+.export-info-box {
+  background: #e3f2fd;
+  border-left: 4px solid #2196f3;
+  padding: 12px 15px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+  font-size: 13px;
+  color: #1565c0;
+}
+
+.export-info-box .icon {
+  margin-right: 8px;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .export-modal {
+    width: 95%;
+    max-width: 100%;
+  }
+
+  .export-modal-header {
+    padding: 20px;
+  }
+
+  .export-modal-header h2 {
+    font-size: 20px;
+  }
+
+  .export-modal-body {
+    padding: 20px;
+  }
+
+  .export-modal-footer {
+    padding: 15px 20px;
+    flex-direction: column-reverse;
+  }
+
+  .export-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .export-modal {
+    background: #2a2a2a;
+    color: #e0e0e0;
+  }
+
+  .export-modal-body {
+    background: #2a2a2a;
+  }
+
+  .export-description {
+    color: #b0b0b0;
+  }
+
+  .export-option-btn {
+    background: #333;
+    color: #e0e0e0;
+    border-color: #444;
+  }
+
+  .export-option-btn:hover {
+    background: #3a3a3a;
+    border-color: #667eea;
+  }
+
+  .export-option-full-btn {
+    background: #333;
+    color: #e0e0e0;
+    border-color: #444;
+  }
+
+  .export-option-full-btn:hover {
+    background: #3a3a3a;
+  }
+
+  .export-modal-footer {
+    background: #333;
+    border-top-color: #444;
+  }
+
+  .export-btn-secondary {
+    background: #444;
+    color: #e0e0e0;
+  }
+
+  .export-btn-secondary:hover {
+    background: #555;
+  }
+}

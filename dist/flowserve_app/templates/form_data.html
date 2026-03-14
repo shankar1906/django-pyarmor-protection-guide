@@ -1,0 +1,388 @@
+{% extends 'base_new.html' %}
+{% load static %}
+
+{% block header_title %}Form Data{% endblock %}
+
+{% block content %}
+<style>
+  /* ===== Container & Scroll ===== */
+  .table-container-wrapper {
+    height: calc(100vh - 155px);
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  .card {
+    border: none;
+    border-radius: 0;
+    background: white;
+    box-shadow: none;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+  }
+
+  .card-body {
+    padding: 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+    background: white;
+  }
+
+  /* ===== Hint Bar ===== */
+  .edit-hint {
+    padding: 0.5rem 1rem;
+    background: #e7f3ff;
+    color: #0066cc;
+    font-size: 0.8125rem;
+    border-bottom: 1px solid #b3d9ff;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .edit-hint .close-btn {
+    background: transparent;
+    border: none;
+    color: #0066cc;
+    font-size: 1.125rem;
+    cursor: pointer;
+    margin-left: auto;
+    line-height: 1;
+  }
+
+  /* ===== Filter/Action Row ===== */
+  .custom-filter-row {
+    padding: 0.75rem 1rem;
+    background: white;
+    border-bottom: 1px solid #dee2e6;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  /* ===== Table Styling ===== */
+  .table-responsive {
+    flex: 1;
+    overflow: auto;
+    background: white;
+  }
+
+  /* Scrollbar Styling */
+  .table-responsive::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .table-responsive::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+
+  .table-responsive::-webkit-scrollbar-thumb {
+    background: #2B3B64;
+    border-radius: 4px;
+  }
+
+  .table-responsive::-webkit-scrollbar-thumb:hover {
+    background: #c9162e;
+  }
+
+  .table {
+    margin-bottom: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+    width: 100%;
+  }
+
+  .table thead th {
+    position: sticky;
+    top: 0;
+    background: #e9ecef;
+    color: black;
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    padding: 1rem 0.75rem;
+    border-bottom: 2px solid #edf2f7;
+    z-index: 10;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    white-space: nowrap;
+    text-align: center;
+    cursor: pointer;
+  }
+
+  .table tbody td {
+    padding: 0.5rem;
+    vertical-align: middle;
+    border: 1px solid #e5e7eb;
+    border-top: none;
+  }
+
+  .table tbody tr:first-child td {
+    border-top: 1px solid #e5e7eb;
+  }
+
+  .table .form-control,
+  .table .form-select {
+    font-size: 0.875rem;
+    padding: 0.4rem 0.5rem;
+    border-color: #e2e8f0;
+  }
+
+  .table .form-control:focus,
+  .table .form-select:focus {
+    border-color: #3182ce;
+    box-shadow: 0 0 0 1px rgba(49, 130, 206, 0.2);
+  }
+
+  .status-enabled {
+    background-color: #d1fae5;
+    color: #065f46;
+  }
+  .status-disabled {
+    background-color: #fee2e2;
+    color: #991b1b;
+  }
+
+  .invalid-feedback {
+    font-size: 0.75rem;
+  }
+
+  .delete-btn {
+    background: transparent;
+    border: none;
+    color: #e53e3e;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: transform 0.2s;
+  }
+  .delete-btn:hover {
+    transform: scale(1.1);
+    color: #c53030;
+  }
+</style>
+
+<div class="container-fluid table-container-wrapper">
+  <div class="card">
+
+    <!-- Hint Bar -->
+    <div class="edit-hint" id="editHint">
+      <div>💡 Tip: Modify values directly • Click headers to sort</div>
+      <button class="close-btn" onclick="document.getElementById('editHint').style.display='none'">&times;</button>
+    </div>
+
+    <!-- Action Row -->
+    <div class="custom-filter-row">
+      <button class="btn btn-outline-primary btn-sm" onclick="addNewRow()">
+        <i class="fas fa-plus"></i> ADD OPTION
+      </button>
+    </div>
+
+    <!-- MAIN FORM WRAPPER -->
+    <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden;">
+      <form id="formDataForm" style="display: flex; flex-direction: column; height: 100%;">
+        {% csrf_token %}
+
+        <div class="table-responsive">
+          <table class="table no-datatables" id="formDataTable">
+            <thead>
+              <tr>
+                <th class="sortable text-end pe-3" data-column="0" style="width: 80px;">S.No <i class="fas fa-sort"></i></th>
+                <th class="sortable text-start" data-column="1">SERIAL NUMBER <i class="fas fa-sort"></i></th>
+                <th class="sortable text-start" data-column="2">STATUS <i class="fas fa-sort"></i></th>
+                <th style="width: 80px;">ACTION</th>
+              </tr>
+            </thead>
+            <tbody id="formDataTableBody">
+              {% for item in form_data %}
+              <tr data-id="{{ item.id }}">
+                <td class="text-end pe-3">{{ forloop.counter }}</td>
+                <td>
+                  <input type="text" class="form-control" name="form_name_{{ item.id }}" value="{{ item.form_name }}" 
+                    oninput="updateInMemory({{ item.id }}, 'form_name', this.value)">
+                </td>
+                <td>
+                  <select class="form-select {% if item.status == 'ENABLE' %}status-enabled{% else %}status-disabled{% endif %}" 
+                    onchange="updateInMemory({{ item.id }}, 'status', this.value); toggleStatusClass(this)">
+                    <option value="ENABLE" {% if item.status == 'ENABLE' %}selected{% endif %}>Enable</option>
+                    <option value="DISABLE" {% if item.status == 'DISABLE' %}selected{% endif %}>Disable</option>
+                  </select>
+                </td>
+                <td class="text-center">
+                  <button type="button" class="delete-btn" onclick="deleteRow({{ item.id }}, this)" title="Delete Option">
+                    <i class="fas fa-trash-alt"></i>
+                  </button>
+                </td>
+              </tr>
+              {% empty %}
+              <tr id="noDataRow">
+                <td colspan="4" class="text-center py-4 text-muted">No form data found. Click "ADD OPTION" to begin.</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </form>
+    </div>
+
+    <!-- Footer: Save Button -->
+    <div style="background: white; padding: 0.75rem 1.5rem; border-top: 1px solid #dee2e6; display: flex; justify-content: flex-end;">
+      <button type="button" class="btn btn-success px-4" onclick="submitForm()">SAVE</button>
+    </div>
+
+  </div>
+</div>
+
+<script src="{% static 'scripts/dialog-manager.js' %}"></script>
+<script>
+  let formDataArray = [
+    {% for item in form_data %}
+      { id: {{ item.id }}, form_name: "{{ item.form_name|escapejs }}", status: "{{ item.status }}" },
+    {% endfor %}
+  ];
+
+  let nextTempId = -1;
+
+  function updateInMemory(id, field, value) {
+    const item = formDataArray.find(x => x.id === id);
+    if (item) item[field] = value;
+  }
+
+  function toggleStatusClass(select) {
+    select.classList.remove('status-enabled', 'status-disabled');
+    select.classList.add(select.value === 'ENABLE' ? 'status-enabled' : 'status-disabled');
+  }
+
+  function addNewRow() {
+    const noData = document.getElementById('noDataRow');
+    if (noData) noData.remove();
+
+    const tbody = document.getElementById('formDataTableBody');
+    const id = nextTempId--;
+    
+    const newItem = { id: id, form_name: "", status: "ENABLE" };
+    formDataArray.push(newItem);
+
+    const row = document.createElement('tr');
+    row.setAttribute('data-id', id);
+    row.innerHTML = `
+      <td class="text-end pe-3 text-muted">NEW</td>
+      <td>
+        <input type="text" class="form-control" value="" 
+          oninput="updateInMemory(${id}, 'form_name', this.value)">
+      </td>
+      <td>
+        <select class="form-select status-enabled" 
+          onchange="updateInMemory(${id}, 'status', this.value); toggleStatusClass(this)">
+          <option value="ENABLE" selected>Enable</option>
+          <option value="DISABLE">Disable</option>
+        </select>
+      </td>
+      <td class="text-center">
+        <button type="button" class="delete-btn" onclick="deleteRow(${id}, this)" title="Remove Row">
+            <i class="fas fa-minus-circle"></i>
+        </button>
+      </td>
+    `;
+    tbody.appendChild(row);
+  }
+
+  function deleteRow(id, btn) {
+    const row = btn.closest('tr');
+    
+    // If it's a new row (not yet in DB), just remove it from DOM and Array
+    if (id < 0) {
+        formDataArray = formDataArray.filter(x => x.id !== id);
+        row.remove();
+        if (formDataArray.length === 0) location.reload(); // Refresh to show empty state
+        return;
+    }
+
+    // Existing row: Ask for confirmation using DialogManager
+    DialogManager.confirm({
+        title: "Delete Confirmation",
+        message: "Are you sure you want to delete this serial number?",
+        onConfirm: () => {
+             DialogManager.loading("Deleting...", "Removing record");
+             fetch(`/api/formdata/delete/${id}/`, {
+                 method: 'POST',
+                 headers: {
+                     'X-CSRFToken': '{{ csrf_token }}'
+                 }
+             })
+             .then(r => r.json())
+             .then(res => {
+                 DialogManager.closeLoading();
+                 if (res.error) {
+                     DialogManager.toast({ type: 'error', message: res.error });
+                 } else {
+                     DialogManager.toast({ type: 'success', message: res.message });
+                     formDataArray = formDataArray.filter(x => x.id !== id);
+                     row.remove();
+                     if (formDataArray.length === 0) location.reload();
+                 }
+             })
+             .catch(err => {
+                 DialogManager.closeLoading();
+                 DialogManager.toast({ type: 'error', message: "Network error" });
+             });
+        }
+    });
+  }
+
+  function submitForm() {
+    // Basic validation
+    let hasError = false;
+    const names = new Set();
+
+    for (const item of formDataArray) {
+      const name = item.form_name.trim();
+      if (!name) {
+        DialogManager.toast({ type: 'error', message: "Serial Number cannot be empty." });
+        return;
+      }
+      if (names.has(name.toLowerCase())) {
+        DialogManager.toast({ type: 'error', message: `Duplicate Serial Number: ${name}` });
+        return;
+      }
+      names.add(name.toLowerCase());
+    }
+
+    DialogManager.loading("Saving...", "Updating form data");
+
+    fetch('/api/formdata/update/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': '{{ csrf_token }}'
+      },
+      body: JSON.stringify({ items: formDataArray })
+    })
+    .then(r => r.json())
+    .then(res => {
+      DialogManager.closeLoading();
+      if (res.error) {
+        DialogManager.toast({ type: 'error', message: res.error });
+      } else {
+        DialogManager.toast({ type: 'success', message: res.message });
+        setTimeout(() => location.reload(), 1000);
+      }
+    })
+    .catch(err => {
+      DialogManager.closeLoading();
+      console.error(err);
+      DialogManager.toast({ type: 'error', message: 'Network error occurred.' });
+    });
+  }
+</script>
+{% endblock %}

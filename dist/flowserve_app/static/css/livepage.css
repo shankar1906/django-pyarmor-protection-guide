@@ -1,0 +1,711 @@
+  .hidden {
+    display: none !important;
+  }
+
+  .polygon-header {
+    position: absolute;
+    top: 11%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 35%;
+    height: 40%;
+    background: rgb(255, 19, 19);
+    clip-path: polygon(0 0, 100% 0, 90% 100%, 10% 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: bold;
+    font-size: 1rem;
+    z-index: 10;
+  }
+
+  .small {
+    font-size: 16px;
+    font-family: 'Roboto', system-ui, sans-serif;
+  }
+
+  /* .button-container{
+   background-color: #9999995a; 
+  } */
+
+  .r1-card>div,
+  .r2-card,
+  .r3-card>div,
+  .r4-card,
+  .alm-btn {
+    background: #fff;
+    border: 1px solid #999;
+    border-radius: 6px;
+    font-weight: 600;
+    font-family: 'Roboto', system-ui, sans-serif;
+    font-size: 17px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .r1-card>div {
+    height: 40px;
+  }
+
+  .r2-card {
+    height: 312px;
+  }
+
+  .r3-card>div {
+    height: 60px;
+  }
+
+  .r4-card {
+    height: 60px;
+  }
+
+  .alm-btn {
+    height: 40px;
+    background: #f70303;
+    color: #fff;
+  }
+
+
+  .fixed-card {
+    height: 83px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 5px;
+  }
+
+  .fixed-card .label {
+    align-self: flex-start;
+    font-weight: 600;
+    font-size: 14px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .fixed-card .value-group {
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-end;
+    gap: 4px;
+  }
+
+  .fixed-card .value {
+    font-size: 34px;
+    font-weight: 400;
+    font-family: 'JetBrains Mono', monospace;
+    /* margin-right: 8px; */
+  }
+
+  .fixed-card .unit {
+    font-size: 13px;
+    margin-bottom: 5px;
+    font-weight: 500;
+    font-family: 'JetBrains Mono', monospace;
+    width: 30%;
+  }
+
+  .fixed-card-1 {
+    min-height: 42px;
+    height: auto;
+    background-color: #ffffff;
+    color: #475569;
+    padding: 6px 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 10px;
+    text-transform: uppercase;
+    font-family: 'Inter', sans-serif;
+    font-weight: 800;
+  }
+
+  .fixed-card-1 span:first-child {
+    font-size: 9px;
+    color: #64748b;
+    font-weight: 800;
+    letter-spacing: 0.3px;
+    margin-right: 8px;
+  }
+
+  .fixed-card-1 .value {
+    font-size: 11px;
+    color: #1e293b;
+    font-weight: 800;
+    width: auto;
+    text-align: right;
+  }
+
+  /* Status Bar (New Bar below header) */
+  .status-bar {
+    background-color: #2D2D2D;
+    color: white;
+    padding: 2px 0;
+    margin-bottom: 5px;
+  }
+
+  .status-item {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 10px !important;
+    border-right: 1px solid #444;
+    padding: 8px 15px !important;
+    height: 100%;
+    min-width: 0;
+  }
+
+  .status-item:last-child {
+    border-right: none;
+  }
+
+  .status-label {
+    font-size: 10px;
+    color: #ffcc00; /* Yellow from image */
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+
+  .status-value {
+    font-size: 0.9rem;
+    font-weight: 800;
+    font-family: 'JetBrains Mono', monospace;
+    color: #ffffff;
+  }
+
+  .right-bt-card {
+    display: flex;
+    height: 60px;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    text-transform: uppercase;
+  }
+
+  .right-bt-card .label {
+    font-weight: bold;
+    font-size: 17px;
+    font-weight: 600;
+    font-family: 'Roboto', system-ui, sans-serif;
+  }
+
+  .right-bt-card .value-group {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+
+  .right-bt-card .value {
+    font-size: 30px;
+    font-weight: bold;
+    font-weight: 400;
+  }
+
+  .right-bt-card .unit {
+    font-size: 9px;
+    margin-bottom: 5px;
+    font-weight: bold;
+    width: 40px;
+  }
+
+  /* Top Row Bar */
+  .station-live {
+    background-color: #000000;
+    padding: 4px 8px !important;
+    margin: 0 !important;
+    width: 100%;
+    border-bottom: 2px solid #333;
+  }
+
+  .btn {
+    height: 30px;
+    width: auto;
+    min-width: 100px;
+    padding: 0 15px;
+    font-size: 11px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 800;
+    background-color: #ffffff !important; /* White Background */
+    color: #000000 !important;           /* Black Text */
+    border: 1px solid #444 !important;
+    border-radius: 4px;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+
+  .btn:hover {
+    background-color: #2563eb !important;
+    color: #fff !important;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  }
+
+  .btn-home {
+    min-width: 35px !important;
+    width: 35px !important;
+    background-color: #000000 !important;
+    color: #ffffff !important;
+    border: 1px solid #444 !important;
+  }
+
+  /* Specific Button Colors */
+  #station-live-container button[id="26"], 
+  button.cycle-complete {
+    background-color: #ffd700 !important; /* Gold Background */
+    color: #000000 !important;           /* Black Text */
+    border: 1px solid #000000 !important;
+    font-weight: 900;
+  }
+
+  button.reset-btn,
+  #station-live-container button.reset-btn {
+    background-color: #000000 !important; /* Black bg */
+    color: #ffffff !important;           /* White text */
+    border: 1px solid #ffffff !important;
+  }
+
+  /* Active Test Button - Inverted to Black BG, White Text */
+  button.active-test-btn {
+    background-color: orange !important; 
+    color: #ffffff !important;
+    border: 1px solid #ffffff !important;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+  }
+
+
+  .btn-disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .live-section {
+    height: 100%;
+    border-color: 5px #22028a;
+    border-radius: 20px;
+    box-shadow: 0 0 100px #0a0a0a;
+  }
+
+
+  .chart-wrapper {
+    display: block;
+    box-sizing: border-box;
+    height: 100%;
+    width: 100%;
+  }
+
+  .status-circle {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    scale: 0.8;
+    background-color: green;
+  }
+
+  #inner-circle {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background-color: black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  #inner-dot {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background-color: rgb(28, 85, 28);
+  }
+
+  /* Disconnected state */
+  .disconnected {
+    background-color: red !important;
+    animation: blink 1s infinite;
+  }
+
+  .disconnected #inner-circle {
+    background-color: red !important;
+  }
+
+  .disconnected #inner-dot {
+    background-color: darkred !important;
+  }
+
+  /* Blink animation */
+  @keyframes blink {
+    0% {
+      opacity: 1;
+    }
+
+    50% {
+      opacity: 0.3;
+    }
+
+    100% {
+      opacity: 1;
+    }
+  }
+
+  .card-container {
+    height: 100%;
+  }
+
+
+  .set-card {
+    background-color: gainsboro;
+    color: #030303;
+  }
+
+  .act-card {
+
+    background-color: green;
+    color: white;
+
+  }
+
+  .result-card {
+    background-color: #f70303;
+    color: white;
+  }
+
+  .active-test-btn {
+    background: #000000 !important;
+    color: #fff !important;
+    border: 1px solid #fff !important;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+    transform: translateY(-1px);
+  }
+
+  .active-test-btn:hover {
+    background: #1a1a1a !important;
+  }
+
+  .station-live-container {
+    flex: 1;
+    min-width: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .station-live-container.active {
+    visibility: visible;
+    pointer-events: auto;
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  /* Test result button colors */
+  .test-pass {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    border: 2px solid #28a745 !important;
+  }
+
+  .test-pass:hover {
+    background-color: #f8f9fa !important;
+  }
+
+  .test-fail {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    border: 2px solid #dc3545 !important;
+  }
+
+  .test-fail:hover {
+    background-color: #c82333 !important;
+  }
+
+  /* Gauge and Chart Containers - Responsive Design */
+  .demo-gauge-card {
+    background: #222222;
+    border-radius: 8px;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 280px;
+  }
+
+  .demo-card-header {
+    text-align: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #444;
+    margin-bottom: 10px;
+  }
+
+  .c-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #ffffff;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .demo-gauge-wrap {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 15px;
+    position: relative;
+  }
+
+  .demo-gauge-wrap canvas {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto !important;
+    height: auto !important;
+  }
+
+  /* Chart Container */
+  .chart-wrapper {
+    display: block;
+    box-sizing: border-box;
+    height: 100%;
+    width: 100%;
+    min-height: 300px;
+    padding: 15px;
+  }
+
+  .chart-wrapper canvas {
+    max-width: 100%;
+    max-height: 100%;
+  }
+
+  /* Ensure chart card has same padding as gauge cards */
+  .card.live-section {
+    padding: 15px !important;
+  }
+
+  /* Test Info Card */
+  .demo-gauge-card .d-flex.flex-column {
+    height: 100%;
+    padding: 0 10px;
+  }
+
+  .f-label {
+    font-size: 0.7rem;
+    color: #94a3b8;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+
+  .f-value {
+    font-size: 1rem;
+    color: #ffffff;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* Responsive Adjustments */
+  @media (max-width: 1200px) {
+    .fixed-card-1 span:first-child {
+      font-size: 8px;
+    }
+    .fixed-card-1 .value {
+      font-size: 10px;
+    }
+    
+    .demo-gauge-card {
+      min-height: 260px;
+      padding: 12px;
+    }
+    
+    .demo-gauge-wrap {
+      padding: 12px;
+    }
+    
+    .chart-wrapper {
+      min-height: 280px;
+      padding: 12px;
+    }
+    
+    .card.live-section {
+      padding: 12px !important;
+    }
+  }
+
+  @media (max-width: 992px) {
+    .status-item {
+      padding: 6px 10px !important;
+    }
+    .status-label {
+      font-size: 9px;
+    }
+    .status-value {
+      font-size: 0.85rem;
+    }
+    
+    .demo-gauge-card {
+      min-height: 240px;
+      padding: 10px;
+    }
+    
+    .demo-gauge-wrap {
+      padding: 10px;
+    }
+    
+    .c-title {
+      font-size: 0.9rem;
+    }
+    
+    .chart-wrapper {
+      min-height: 260px;
+      padding: 10px;
+    }
+    
+    .card.live-section {
+      padding: 10px !important;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .station-live > .d-flex {
+      flex-direction: column;
+      gap: 10px;
+      align-items: flex-start !important;
+    }
+    
+    .station-live-buttons {
+      width: 100%;
+      justify-content: flex-start;
+    }
+
+    .info-row-container .row {
+      flex-wrap: wrap !important;
+    }
+    
+    .info-row-container .col {
+      flex: 0 0 50%;
+      max-width: 50%;
+    }
+
+    .brand-logos {
+      display: none !important;
+    }
+
+    .status-bar .row {
+      flex-direction: column;
+    }
+
+    .status-item {
+      border-right: none;
+      border-bottom: 1px solid #444;
+      justify-content: space-between !important;
+      padding: 10px 20px !important;
+    }
+
+    .status-item:last-child {
+      border-bottom: none;
+    }
+    
+    .demo-gauge-card {
+      min-height: 220px;
+      padding: 8px;
+    }
+    
+    .demo-gauge-wrap {
+      padding: 8px;
+    }
+    
+    .chart-wrapper {
+      min-height: 240px;
+      padding: 8px;
+    }
+    
+    .card.live-section {
+      padding: 8px !important;
+    }
+    
+    .f-label {
+      font-size: 0.65rem;
+    }
+    
+    .f-value {
+      font-size: 0.9rem;
+    }
+  }
+
+  @media (max-width: 576px) {
+    .info-row-container .col {
+      flex: 0 0 100%;
+      max-width: 100%;
+    }
+    
+    .demo-gauge-card {
+      min-height: 200px;
+      padding: 8px;
+    }
+    
+    .c-title {
+      font-size: 0.85rem;
+    }
+    
+    .demo-gauge-wrap {
+      padding: 8px;
+    }
+    
+    .chart-wrapper {
+      min-height: 220px;
+      padding: 8px;
+    }
+    
+    .card.live-section {
+      padding: 8px !important;
+    }
+    
+    .f-label {
+      font-size: 0.6rem;
+    }
+    
+    .f-value {
+      font-size: 0.85rem;
+    }
+
+    #valve_status_s1 {
+      font-size: 1.4rem !important;
+    }
+    
+    .demo-card-header {
+      padding: 6px 0;
+      margin-bottom: 8px;
+    }
+  }
+
+  @media (max-width: 400px) {
+    .demo-gauge-card {
+      min-height: 180px;
+      padding: 8px;
+    }
+    
+    .demo-gauge-wrap {
+      padding: 8px;
+    }
+    
+    .chart-wrapper {
+      min-height: 200px;
+      padding: 8px;
+    }
+    
+    .card.live-section {
+      padding: 8px !important;
+    }
+    
+    .c-title {
+      font-size: 0.8rem;
+    }
+  }

@@ -1,0 +1,1260 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Valve Testing Form</title>
+
+    <!-- External Stylesheets -->
+    <link href="{% static 'vendor/google-fonts/inter.css' %}" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'vendor/font-awesome/all-6.5.0.min.css' %}">
+    <link href="{% static 'vendor/bootstrap/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'vendor/sweetalert2/sweetalert2.min.css' %}" rel="stylesheet">
+
+    <!-- Valve Form Styles -->
+    <link href="{% static 'css/valve-form.css' %}?v=2.5" rel="stylesheet">
+    <style>
+        /* Fixed width for Enable/Disable action buttons */
+        .btn-action-fixed {
+            min-width: 85px;
+            width: 85px;
+        }
+        
+        /* Hidden class for toggling visibility */
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+
+
+<body>
+    <!-- Header -->
+    <header class="app-header">
+        <div class="d-flex flex-column" style="flex: 1;">
+            <div class="d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center gap-3">
+                    <!-- <a href="/dashboard/" class="btn-back">
+                        <i class="fas fa-arrow-left"></i>
+                        <span>Back</span>
+                    </a> -->
+                    <img src="{% static 'images/logo/logo.png' %}" alt="Flowserve" height="50">
+                    <span class="fw-bold" style="font-size: 1.1rem;" id="mainHeaderTitle">Valve Test</span>
+                </div>
+            </div>
+            <!-- <nav aria-label="breadcrumb" class="mt-1">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="/dashboard/"><i class="fas fa-home"></i> Dashboard</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Valve Testing Form</li>
+                </ol>
+            </nav> -->
+        </div>
+
+        <div class="d-flex align-items-center gap-3">
+            <!-- Action Buttons Moved to Header -->
+            <div class="d-flex align-items-center gap-2">
+                <div class="action-bar" id="actionBarS1">
+                    <button id="save_btn_s1" class="btn btn-custom btn-success-custom" onclick="save_station1()"><i
+                            id="save_icon_s1" class="fas fa-save"></i>
+                        <span id="save_text_s1">Save</span></button>
+                    <button id="next_btn_s1" class="btn btn-custom btn-brand" onclick="continue_station1()">Next <i
+                            class="fas fa-arrow-right"></i></button>
+                    <button class="btn btn-custom btn-secondary-custom" onclick="clear_station1()">Clear</button>
+                    <button class="btn btn-custom btn-danger-custom" onclick="cancel_station1()">Cancel</button>
+                </div>
+            </div>
+
+        </div>
+    </header>
+
+    <div class="container-fluid main-content">
+
+        <!-- STATION 1 Structure -->
+        <div id="station1_container" class="station-container">
+            <div class="row h-100 g-2">
+
+                <!-- TOP ROW: Testing Parameters Left, Valve Details + Parts Right -->
+                <div class="col-12">
+                    <div class="row g-2" style="height: 42vh;">
+
+                        <!-- LEFT: Testing Parameters (Taller with Load Button) -->
+                        <div class="col-lg-3">
+                            <div class="form-card h-100">
+                                <div class="card-header py-1">
+                                    <span>Testing Parameters</span>
+                                </div>
+                                <div class="card-body py-2">
+                                    <div class="row g-1">
+                                        <div class="col-6"><label class="form-label">Standard</label><select
+                                                id="standard_s1" name="standard_s1" class="form-select">
+                                                <option value="">Select</option>{% for s in valve_standards %}<option
+                                                    value="{{ s }}">{{ s }}</option>{% endfor %}
+                                            </select></div>
+                                        <div class="col-6"><label class="form-label">Size</label><select id="size_s1"
+                                                name="size_s1" class="form-select">
+                                                <option value="">Select</option>{% for s in valve_sizes %}<option
+                                                    value="{{ s }}">{{ s }}</option>{% endfor %}
+                                            </select></div>
+                                        <div class="col-6"><label class="form-label">Class</label><select id="class_s1"
+                                                name="class_s1" class="form-select">
+                                                <option value="">Select</option>{% for c in valve_classes %}<option
+                                                    value="{{c}}">{{c}}</option>{% endfor %}
+                                            </select></div>
+                                        <div class="col-6"><label class="form-label">Body Material</label><select
+                                                id="body_material_s1" name="body_material_s1" class="form-select">
+                                                <option value="">Select</option>{% for m in shell_materials %}<option
+                                                    value="{{m}}">{{m}}</option>{% endfor %}
+                                            </select></div>
+                                        <div class="col-6"><label class="form-label">Type</label><select id="type_s1"
+                                                name="type_s1" class="form-select">
+                                                <option value="">Select</option>{% for t in valve_types %}<option
+                                                    value="{{t.id}}">
+                                                    {{t.name}}</option>{% endfor %}
+                                            </select></div>
+                                        <div class="col-6"><label class="form-label">Pressure Unit</label>
+                                            <select id="pressureunit_s1" name="pressureunit_s1" class="form-select">
+                                                <option value="">Select</option>
+                                                <option value="PSI">PSI</option>
+                                                <!-- <option value="BAR">BAR</option> -->
+                                            </select>
+                                        </div>
+                                        <div class="col-12 text-end mt-2">
+                                            <button id="load_btn_s1" class="btn btn-sm btn-brand px-3"
+                                                onclick="load_station1()">Load</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- RIGHT: Valve Details (Top) + Parts Table (Bottom) -->
+                        <div class="col-lg-9 d-flex flex-column gap-2">
+
+                            <!-- Valve Details (Top) -->
+                            <div class="form-card h-100" style="position: relative; z-index: 1050;">
+                                <div class="card-header py-1" id="valveDetailsHeader">Valve Details</div>
+                                <div class="card-body py-2" style="overflow: visible;">
+                                    <!-- <div class="row mb-2 align-items-end g-1">
+                                        <div class="col-md-3">
+                                            <label class="form-label">Serial Number</label>
+                                            <div class="valve-serial-wrapper position-relative">
+                                                <input type="text" id="VALVE_SER_NO" name="VALVE_SER_NO"
+                                                    class="form-control" placeholder="Scan..." autocomplete="off"
+                                                    onkeydown="return event.code !== 'Space'">
+                                            </div>
+                                        </div>
+                                    </div> -->
+                                    <!-- 
+                                    <div class="row g-1">
+                                        <div class="col-md-3"><label class="form-label">Valve Serial No.</label><input
+                                                type="text" id="valve_serial_no_s1" name="Customer"
+                                                class="form-control"></div>
+                                        <div class="col-md-3"><label class="form-label">Procedure No.</label><input
+                                                type="text" id="procedure_no_s1" name="Procedure No"
+                                                class="form-control"></div>
+                                        <div class="col-md-3"><label class="form-label">CAT No.</label><input
+                                                type="text" id="cat_no_s1" name="CAT No" class="form-control">
+                                        </div>
+
+                                        <div class="col-md-2"><label class="form-label">Sales Order No.</label><input
+                                                type="text" id="sales_order_no_s1" name="Sales Order No"
+                                                class="form-control">
+                                        </div>
+                                        <div class="col-md-2"><label class="form-label">Valve Tag No.</label><input
+                                                type="text" id="valve_tag_no_s1" name="Valve Tag No"
+                                                class="form-control">
+                                        </div>
+                                        <div class="col-md-2"><label class="form-label">Sales Item No.</label><input
+                                                type="text" id="sales_item_no_s1" name="Sales Item No"
+                                                class="form-control">
+                                        </div>
+
+                                        <div class="col-md-3"><label class="form-label">Customer</label><input
+                                                type="text" id="customer_s1" name="Customer" class="form-control">
+                                        </div>
+                                        <div class="col-md-3"><label class="form-label">GA Drg No.</label><input
+                                                type="text" id="ga_drg_no_s1" name="GA Drg No" class="form-control">
+                                        </div>
+
+                                        <div class="col-md-3"><label class="form-label">Gear/ Accuator
+                                                Details</label><input type="text" id="gear_accuator_details_s1"
+                                                name="Gear/ Accuator Details" class="form-control">
+                                        </div>
+                                        <div class="col-md-3"><label class="form-label">M/A gear Ratio</label><input
+                                                type="text" id="ma_gear_ratio_s1" name="M/A gear Ratio"
+                                                class="form-control">
+                                        </div>
+                                        <div class="col-md-3"><label class="form-label">Stem Position</label><select
+                                                id="stem_orientation_s1" name="Stem Orientation" class="form-select">
+                                                <option value="">Select</option>
+                                                <option>Vertical</option>
+                                                <option>Horizontal</option>
+                                            </select></div>
+                                        <div class="col-md-3"><label class="form-label">Test Orientation</label><select
+                                                id="test_orientation_s1" name="Test Orientation" class="form-select">
+                                                <option value="">Select</option>
+                                                <option>Vertical</option>
+                                                <option>Horizontal</option>
+                                            </select></div>
+                                        <div class="col-md-3">
+                                            <label class="form-label">Illustration</label>
+                                            <div class="dropdown">
+                                                <button class="form-select text-start" type="button"
+                                                    id="illustration_btn_s1" data-bs-toggle="dropdown"
+                                                    aria-expanded="false"
+                                                    style="display: flex; align-items: center; justify-content: space-between; overflow: hidden;">
+                                                    <span id="illustration_selected_text_s1">Select</span>
+                                                </button>
+                                                <ul class="dropdown-menu w-100 p-1"
+                                                    aria-labelledby="illustration_btn_s1">
+                                                    <li><a class="dropdown-item d-flex align-items-center py-1" href="#"
+                                                            onclick="selectIllustration('H1', `{% static 'images/H1.png' %}`); return false;"><img
+                                                                src="{% static 'images/H1.png' %}" height="40"
+                                                                class="me-2 rounded shadow-sm border"
+                                                                style="object-fit: contain;"> H1</a></li>
+                                                    <li><a class="dropdown-item d-flex align-items-center py-1" href="#"
+                                                            onclick="selectIllustration('H2', `{% static 'images/H2.png' %}`); return false;"><img
+                                                                src="{% static 'images/H2.png' %}" height="40"
+                                                                class="me-2 rounded shadow-sm border"
+                                                                style="object-fit: contain;"> H2</a></li>
+                                                    <li><a class="dropdown-item d-flex align-items-center py-1" href="#"
+                                                            onclick="selectIllustration('H3', `{% static 'images/H3.png' %}`); return false;"><img
+                                                                src="{% static 'images/H3.png' %}" height="40"
+                                                                class="me-2 rounded shadow-sm border"
+                                                                style="object-fit: contain;"> H3</a></li>
+                                                    <li><a class="dropdown-item d-flex align-items-center py-1" href="#"
+                                                            onclick="selectIllustration('H4', `{% static 'images/H4.png' %}`); return false;"><img
+                                                                src="{% static 'images/H4.png' %}" height="40"
+                                                                class="me-2 rounded shadow-sm border"
+                                                                style="object-fit: contain;"> H4</a></li>
+                                                    <li><a class="dropdown-item d-flex align-items-center py-1" href="#"
+                                                            onclick="selectIllustration('V1', `{% static 'images/V1.png' %}`); return false;"><img
+                                                                src="{% static 'images/V1.png' %}" height="40"
+                                                                class="me-2 rounded shadow-sm border"
+                                                                style="object-fit: contain;"> V1</a></li>
+                                                </ul>
+                                            </div>
+                                            // Hidden input moved/removed for compatibility
+                                            <input type="hidden" id="illustration_s1" name="Illustration" value="">
+                                            <script>
+                                                function selectIllustration(val, imgSrc) {
+                                                    document.getElementById('illustration_s1').value = val;
+                                                    document.getElementById('illustration_selected_text_s1').innerHTML = `<img src="${imgSrc}" height="20" class="me-2"> ${val}`;
+                                                    document.getElementById('illustration_s1').dispatchEvent(new Event('change', { bubbles: true }));
+                                                }
+                                                // Sync UI with loaded data
+                                                document.addEventListener('DOMContentLoaded', () => {
+                                                    setTimeout(() => {
+                                                        const saved = localStorage.getItem("station1_form");
+                                                        if (saved) {
+                                                            const formData = JSON.parse(saved);
+                                                            if (formData['Illustration']) {
+                                                                const val = formData['Illustration'];
+                                                                const imgMap = {
+                                                                    'H1': '{% static "images/H1.png" %}',
+                                                                    'H2': '{% static "images/H2.png" %}',
+                                                                    'H3': '{% static "images/H3.png" %}',
+                                                                    'H4': '{% static "images/H4.png" %}',
+                                                                    'V1': '{% static "images/V1.png" %}'
+                                                                };
+                                                                if (imgMap[val]) {
+                                                                    document.getElementById('illustration_selected_text_s1').innerHTML = `<img src="${imgMap[val]}" height="20" class="me-2"> ${val}`;
+                                                                }
+                                                            }
+                                                        }
+                                                    }, 300);
+                                                });
+                                            </script>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label">Valve Bore
+                                                Orientation</label><select id="valve_bore_orientation_s1"
+                                                name="Valve Bore Orientation" class="form-select">
+                                                <option value="">Select</option>
+                                                <option>Vertical</option>
+                                                <option>Horizontal</option>
+                                            </select></div>
+
+
+                                        <div class="col-md-3"><label class="form-label">Tested By</label><select
+                                                id="testedby_s1" name="Tested By" class="form-select">
+                                                <option value="">Select</option>{% for u in testers %}<option>{{u}}
+                                                </option>{% endfor %}
+                                            </select></div>
+                                        <div class="col-md-3"><label class="form-label">Approved By</label><select
+                                                id="approvedby_s1" name="Approved By" class="form-select">
+                                                <option value="">Select</option>{% for u in testers %}<option>{{u}}
+                                                </option>{% endfor %}
+                                            </select></div>
+                                        <div class="col-md-3">
+                                            <label class="form-label">Date</label>
+                                            <input type="date" id="test_date" name="Date" class="form-control">
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label">Shift</label>
+                                            <select id="test_shift" name="Shift" class="form-select">
+                                                <option value="Shift 1">Shift 1</option>
+                                                <option value="Shift 2">Shift 2</option>
+                                                <option value="Shift 3">Shift 3</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                     -->
+                                    <!-- Dynamic Fields Container -->
+                                    <div id="dynamic_fields_container_s1" class="row g-1 mt-1 pt-1">
+                                        <!-- Dynamic fields will load here -->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Parts Table (65% height) -->
+                            <!-- <div class="form-card" style="flex: 1;">
+                                <div class="card-header py-1">Item / Part Details</div>
+                                <div class="table-responsive h-100">
+                                    <table class="table mb-0 custom-table table-borderless table-striped small">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th style="width: 25%;">Item</th>
+                                                <th>Part No.</th>
+                                                <th>Heat No.</th>
+                                                <th>Material No.</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td class="fw-bold">Body</td>
+                                                <td><input type="text" id="body_partno_s1" name="Body Part No"
+                                                        class="form-control" placeholder="-"></td>
+                                                <td><input type="text" id="body_heatno_s1" name="Body Heat No"
+                                                        class="form-control" placeholder="-"></td>
+                                                <td><input type="text" id="body_materialno_s1" name="Body Material No"
+                                                        class="form-control" placeholder="-"></td>
+                                            </tr>
+                                            <tr>
+                                                <td class="fw-bold">Bottom / Bonnet</td>
+                                                <td><input type="text" id="bottom_partno_s1" name="Bottom Part No"
+                                                        class="form-control" placeholder="-"></td>
+                                                <td><input type="text" id="bottom_heatno_s1" name="Bottom Heat No"
+                                                        class="form-control" placeholder="-"></td>
+                                                <td><input type="text" id="bottom_materialno_s1"
+                                                        name="Bottom Material No" class="form-control" placeholder="-">
+                                                </td>
+                                            </tr>
+
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div> -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BOTTOM ROW: Pressure Tests & Instruments -->
+                <div class="col-12" style="height: calc(50vh - 1rem);">
+                    <div class="row h-100 g-2">
+                        <!-- Left: Pressure Tests -->
+                        <div class="col-md-12 h-100">
+                            <div class="form-card pressuretable h-100">
+                                <div class="d-flex h-100">
+                                    <div class="flex-grow-1 h-100 overflow-auto border-end">
+                                        <div class="card-header py-1 sticky-top">Pressure Tests</div>
+                                        <table class="table mb-0 custom-table table-sm">
+                                            <thead>
+                                                <tr>
+                                                    <th>Test Type</th>
+                                                    <th>Pressure</th>
+                                                    <th>Duration (Sec)</th>
+                                                    <th>Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="pressureTableBody">
+                                                <tr class="empty-state">
+                                                    <td colspan="4" class="text-center py-4"
+                                                        style="color: #94a3b8; font-style: italic;">
+                                                        <i class="fas fa-info-circle me-1"></i>
+                                                        Select testing parameters and click "Load" to view pressure and
+                                                        duration.
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <!-- <div class="degreetable hidden" style="width: 30%;">
+                                        <div class="card-header py-1 sticky-top">Degrees</div>
+                                        <table class="table mb-0 custom-table table-sm">
+                                            <thead>
+                                                <tr>
+                                                    <th>Open</th>
+                                                    <th>Close</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody></tbody>
+                                        </table>
+                                    </div> -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right: Instruments -->
+                        <div class="col-md-6 h-100 d-none">
+                            <div class="form-card h-100">
+                                <div class="h-100 overflow-auto">
+                                    <div class="card-header py-1 sticky-top">Instruments</div>
+                                    <table class="table mb-0 custom-table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th style="width: 10%;" class="text-center">S.No</th>
+                                                <th style="width: 40%;">Instrument Type</th>
+                                                <th style="width: 25%;">Done Date</th>
+                                                <th style="width: 25%;">Due Date</th>
+                                            </tr>
+                                        </thead>
+
+                                        <tbody id="instrumentTableBody">
+                                            <tr class="empty-state">
+                                                <td colspan="4" class="text-center py-4"
+                                                    style="color: #94a3b8; font-style: italic;">
+                                                    <i class="fas fa-info-circle me-1"></i>
+                                                    Select testing parameters and click "Load" to view instruments.
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{% static 'vendor/bootstrap/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'vendor/sweetalert2/sweetalert2.all.min.js' %}"></script>
+    <script src="{% static 'scripts/dialog-manager.js' %}"></script>
+    <script>
+
+
+        function getCookie(name) {
+            if (!document.cookie) return null;
+            const xs = document.cookie.split('; ').find(row => row.startsWith(name + '='));
+            return xs ? decodeURIComponent(xs.split('=')[1]) : null;
+        }
+
+        // Variable Init
+        var loadbutton_status1 = false; var station1_saved = false;
+        let all_testnames = [], all_pressure = [], all_duration = [], all_testid = [];
+        let disabled_btn = [], disabled_testid = [];
+
+
+        document.addEventListener('DOMContentLoaded', function () {
+            // Restore valve type from dashboard selection if available
+            const selectedTypeId = localStorage.getItem('selectedValveTypeId');
+            const selectedTypeName = localStorage.getItem('selectedValveTypeName');
+            if (selectedTypeId && selectedTypeName) {
+                const typeSelect = document.getElementById('type_s1');
+                if (typeSelect) {
+                    typeSelect.value = selectedTypeId;
+                    // Trigger header updates
+                    updateDynamicHeaders(selectedTypeName);
+                    // Load fields
+                    loadDynamicFields(selectedTypeId);
+                }
+            }
+
+            // Check if form should be cleared (new test or after delete)
+            const openedAfterDelete = localStorage.getItem('openedAfterDelete');
+            const urlParams = new URLSearchParams(window.location.search);
+            const stationParam = urlParams.get('station');
+            
+            // Clear form if:
+            // 1. Coming from delete action (openedAfterDelete flag is set)
+            // 2. Coming from new test without incomplete tests (no station param and no saved data)
+            if (openedAfterDelete === 'true' || (stationParam && openedAfterDelete === 'true')) {
+                // Clear all localStorage for station 1
+                localStorage.removeItem('station1_form');
+                localStorage.removeItem('station1_pressure_data');
+                localStorage.removeItem('station1_saved');
+                localStorage.removeItem('station1_fields_disabled');
+                localStorage.removeItem('loadbutton_status1');
+                localStorage.removeItem('disabled_btn');
+                localStorage.removeItem('disabled_testid');
+                localStorage.removeItem('openedAfterDelete');
+                
+                // Reset button statuses
+                loadbutton_status1 = false;
+                station1_saved = false;
+                
+                // Clear the form fields
+                document.querySelectorAll("#station1_container input, #station1_container select").forEach(f => {
+                    if (f.type !== 'button') {
+                        f.value = '';
+                    }
+                });
+                
+                // Reset pressure table to empty state (don't hide it)
+                const pressureTableBody = document.getElementById("pressureTableBody");
+                if (pressureTableBody) {
+                    pressureTableBody.innerHTML = `<tr class="empty-state"><td colspan="4" class="text-center py-4" style="color: #94a3b8; font-style: italic;"><i class="fas fa-info-circle me-1"></i>Select testing parameters and click "Load" to view pressure and duration.</td></tr>`;
+                }
+                
+                // Reset instrument table to empty state
+                const instrumentTableBody = document.getElementById("instrumentTableBody");
+                if (instrumentTableBody) {
+                    instrumentTableBody.innerHTML = `<tr class="empty-state"><td colspan="4" class="text-center py-4" style="color: #94a3b8; font-style: italic;"><i class="fas fa-info-circle me-1"></i>Select testing parameters and click "Load" to view instruments.</td></tr>`;
+                }
+                
+                // Set default date to today
+                const dateInput = document.getElementById('test_date');
+                if (dateInput) {
+                    dateInput.value = new Date().toISOString().split('T')[0];
+                }
+                
+                // Reset save button to default state
+                const saveIcon = document.getElementById('save_icon_s1');
+                const saveText = document.getElementById('save_text_s1');
+                if (saveIcon) saveIcon.className = 'fas fa-save';
+                if (saveText) saveText.textContent = 'Save';
+                
+                return; // Skip loading from localStorage
+            }
+
+            // Check ABRS status every 5 seconds
+            // setInterval(get_abrs_status, 5000);
+
+            // Restore button statuses from localStorage
+            const savedLoadStatus = localStorage.getItem('loadbutton_status1');
+            if (savedLoadStatus === 'true') {
+                loadbutton_status1 = true;
+                // document.getElementById('load_btn_s1').disabled = true;
+                // // Only disable testing parameter fields if Load was previously clicked
+                // ['standard_s1', 'size_s1', 'class_s1', 'body_material_s1', 'type_s1', 'pressureunit_s1'].forEach(id => {
+                //     document.getElementById(id).disabled = true;
+                // });
+            }
+
+            const savedStationStatus = localStorage.getItem('station1_saved');
+            if (savedStationStatus === 'true') {
+                station1_saved = true;
+                // Update save button to show "Saved" state
+                const saveIcon = document.getElementById('save_icon_s1');
+                const saveText = document.getElementById('save_text_s1');
+                if (saveIcon) saveIcon.className = 'fas fa-check-circle';
+                if (saveText) saveText.textContent = 'Saved';
+            }
+
+            setTimeout(() => {
+                loadFromLocalStorage1();
+                restorePressureTableData();
+            }, 200);
+
+            // Set default date to today
+            const dateInput = document.getElementById('test_date');
+            if (dateInput && !dateInput.value) {
+                dateInput.value = new Date().toISOString().split('T')[0];
+            }
+        });
+
+        // --- Storage Utilities ---
+        function saveToLocalStorage() {
+            const fields = document.querySelectorAll("#station1_container input, #station1_container select");
+            let formData = {};
+            fields.forEach(f => { if (f.name && f.type !== 'button') formData[f.name] = f.value; });
+            localStorage.setItem("station1_form", JSON.stringify(formData));
+        }
+        function loadFromLocalStorage1() {
+            const saved = localStorage.getItem("station1_form");
+            if (!saved) return;
+            const formData = JSON.parse(saved);
+            document.querySelectorAll("#station1_container input, #station1_container select").forEach(f => {
+                if (f.name && formData[f.name] !== undefined) f.value = formData[f.name];
+            });
+        }
+        function enableAutoSave() {
+            document.querySelectorAll("#station1_container input, #station1_container select").forEach(f => {
+                f.addEventListener("input", saveToLocalStorage); f.addEventListener("change", saveToLocalStorage);
+            });
+        }
+        enableAutoSave();
+
+        // Function to reset save button to "Save" state
+        function resetSaveButtonState() {
+            if (station1_saved) {
+                station1_saved = false;
+                localStorage.setItem('station1_saved', 'false');
+
+                const saveIcon = document.getElementById('save_icon_s1');
+                const saveText = document.getElementById('save_text_s1');
+                if (saveIcon) saveIcon.className = 'fas fa-save';
+                if (saveText) saveText.textContent = 'Save';
+            }
+        }
+
+        // Attach event listeners to detect form changes and reset save button
+        function attachFormChangeListeners() {
+            document.querySelectorAll("#station1_container input, #station1_container select").forEach(field => {
+                // Skip the assembly number field as it's auto-generated
+                if (field.name === 'ASSEMBLY_NO_s1') return;
+
+                field.addEventListener("input", resetSaveButtonState);
+                field.addEventListener("change", resetSaveButtonState);
+            });
+        }
+        attachFormChangeListeners();
+
+        // --- Helper Functions ---
+
+
+        function restorePressureTableData() {
+            const saved = JSON.parse(localStorage.getItem('station1_pressure_data'));
+            if (saved) {
+                document.querySelector('.pressuretable').classList.remove('hidden');
+                // if (saved.degree) {
+                //     document.querySelector('.degreetable').classList.remove('hidden');
+                //     document.querySelector(".degreetable tbody").innerHTML = `<tr><td>${saved.degree[0]}</td><td>${saved.degree[1]}</td></tr>`;
+                // }
+                const tbody = document.getElementById("pressureTableBody");
+                tbody.innerHTML = "";
+                all_testnames = saved.test_name || []; all_pressure = saved.pressure || []; all_duration = saved.duration || []; all_testid = saved.testid || [];
+                const disabled_ids = JSON.parse(localStorage.getItem("disabled_testid")) || [];
+
+                for (let i = 0; i < all_testnames.length; i++) {
+                    let status = disabled_ids.includes(String(all_testid[i])) ? 'Disabled' : 'Enabled';
+                    let btnClass = status === 'Disabled' ? 'btn-danger disabled-state' : 'btn-success';
+                    
+                    // Display pressure as-is (already converted when loaded)
+                    tbody.innerHTML += `<tr><td>${all_testnames[i]}</td><td>${all_pressure[i]}</td><td>${all_duration[i]}</td><td><button class="btn btn-sm btn-action-fixed ${btnClass}" onclick="enable_disable(this)" data-testname="${all_testnames[i]}" data-testid="${all_testid[i]}">${status}</button></td></tr>`;
+                }
+                disabled_testid = disabled_ids;
+
+                const tbodyInstr = document.getElementById("instrumentTableBody");
+                if (tbodyInstr) {
+                    tbodyInstr.innerHTML = "";
+                    const gauges = saved.gauges || [];
+                    if (gauges.length > 0) {
+                        gauges.forEach((gauge, index) => {
+                            tbodyInstr.innerHTML += `<tr>
+                                <td class="text-center align-middle fw-bold">${index + 1}</td>
+                                <td class="align-middle">${gauge.instrument_type}</td>
+                                <td class="align-middle">${gauge.cal_done_date}</td>
+                                <td class="align-middle">${gauge.cal_due_date}</td>
+                            </tr>`;
+                        });
+                    } else {
+                        tbodyInstr.innerHTML = `<tr class="empty-state"><td colspan="4" class="text-center py-4" style="color: #94a3b8; font-style: italic;"><i class="fas fa-info-circle me-1"></i>No valid gauges found.</td></tr>`;
+                    }
+                }
+            }
+        }
+
+
+
+        var loadbutton_status1 = "";
+        // --- Station 1 Functions ---
+        function load_station1() {
+            var standard = document.getElementById('standard_s1').value;
+            var size = document.getElementById('size_s1').value;
+            var classname = document.getElementById('class_s1').value;
+            var body_material = document.getElementById('body_material_s1').value;
+            var typeSelect = document.getElementById('type_s1');
+            var valve_type_id = typeSelect.value;
+            var valve_type = typeSelect.options[typeSelect.selectedIndex].text;
+            var pressureunit = document.getElementById('pressureunit_s1').value;
+
+            if (!standard || standard.includes("Select")) { DialogManager.toast({ type: 'info', message: "Please select Standard" }); return; }
+            if (!size || size.includes("Select")) { DialogManager.toast({ type: 'info', message: "Please select Size" }); return; }
+            if (!classname || classname.includes("Select")) { DialogManager.toast({ type: 'info', message: "Please select Class" }); return; }
+            if (!body_material || body_material.includes("Select")) { DialogManager.toast({ type: 'info', message: "Please select body material" }); return; }
+            if (!valve_type_id || valve_type_id.includes("Select")) { DialogManager.toast({ type: 'info', message: "Please select valve type" }); return; }
+            if (!pressureunit || pressureunit.includes("Select")) { DialogManager.toast({ type: 'info', message: "Please select Pressure Unit" }); return; }
+
+            // Update headers
+            updateDynamicHeaders(valve_type);
+
+            // Clear tables immediately
+            // document.querySelector('.degreetable').classList.add('hidden');
+            document.getElementById("pressureTableBody").innerHTML = `<tr class="empty-state"><td colspan="4" class="text-center py-4" style="color: #94a3b8; font-style: italic;"><i class="fas fa-info-circle me-1"></i>Select testing parameters and click "Load" to view pressure and duration.</td></tr>`;
+            // document.querySelector(".degreetable tbody").innerHTML = "";
+            document.getElementById("instrumentTableBody").innerHTML = `<tr class="empty-state"><td colspan="4" class="text-center py-4" style="color: #94a3b8; font-style: italic;"><i class="fas fa-info-circle me-1"></i>Select testing parameters and click "Load" to view instruments.</td></tr>`;
+
+            // Show loader
+            DialogManager.loading('Loading...', 'Fetching pressure test data');
+
+            fetch('/api/newform/get_pressure_duration/', {
+                method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+                body: JSON.stringify({ standard, size, class: classname, body_material, type: valve_type, pressure_unit: pressureunit, station: "station1" })
+            }).then(r => r.json()).then(res => {
+                DialogManager.closeLoading();
+
+                if (res.error) {
+                    DialogManager.toast({ type: 'error', message: res.error });
+                    return;
+                }
+
+                const pd = res.pressure_duration;
+
+
+                if (!pd || !pd.pressure.length) { DialogManager.toast({ type: 'error', message: "Failed to load data" }); return; }
+
+
+                if (!pd || !pd.pressure || !pd.duration) {
+                    DialogManager.toast({ type: 'error', message: "Data missing from server" });
+                    return;
+                }
+
+                // Check for null or invalid values in the arrays
+                const hasNull = pd.pressure.some(p => p === null || String(p).toLowerCase() === 'null' || p === '') ||
+                    pd.duration.some(d => d === null || String(d).toLowerCase() === 'null' || d === '');
+
+                if (hasNull) {
+                    DialogManager.toast({ type: 'error', message: "Pressure or Duration contains invalid values (null)" });
+                    return;
+                }
+
+                console.log("PD data loaded successfully");
+
+                // Show the pressure table
+                document.querySelector('.pressuretable').classList.remove('hidden');
+
+                const tbody = document.getElementById("pressureTableBody");
+                tbody.innerHTML = "";
+                all_testnames = []; all_pressure = []; all_duration = []; all_testid = [];
+
+                for (let i = 0; i < pd.test_name.length; i++) {
+                    // Store values (already converted by backend if needed)
+                    all_testnames.push(pd.test_name[i]); 
+                    all_pressure.push(pd.pressure[i]); 
+                    all_duration.push(pd.duration[i]); 
+                    all_testid.push(pd.testid[i]);
+                    
+                    // Display pressure as-is (backend already handled conversion)
+                    tbody.innerHTML += `<tr><td>${pd.test_name[i]}</td><td>${pd.pressure[i]}</td><td>${pd.duration[i]}</td><td><button class="btn btn-sm btn-action-fixed btn-success" onclick="enable_disable(this)" data-testname="${pd.test_name[i]}" data-testid="${pd.testid[i]}">Enabled</button></td></tr>`;
+                }
+
+                const gauges = pd.gauges || [];
+                const tbodyInstr = document.getElementById("instrumentTableBody");
+                tbodyInstr.innerHTML = "";
+                if (gauges.length > 0) {
+                    gauges.forEach((gauge, index) => {
+                        tbodyInstr.innerHTML += `<tr>
+                            <td class="text-center align-middle fw-bold">${index + 1}</td>
+                            <td class="align-middle">${gauge.instrument_type}</td>
+                            <td class="align-middle">${gauge.cal_done_date}</td>
+                            <td class="align-middle">${gauge.cal_due_date}</td>
+                        </tr>`;
+                    });
+                } else {
+                    tbodyInstr.innerHTML = `<tr class="empty-state"><td colspan="4" class="text-center py-4" style="color: #94a3b8; font-style: italic;"><i class="fas fa-info-circle me-1"></i>No valid gauges found.</td></tr>`;
+                }
+
+
+                loadbutton_status1 = true;
+
+                // Disable load button and testing parameter fields
+                // document.getElementById('load_btn_s1').disabled = true;
+                // ['standard_s1', 'size_s1', 'class_s1', 'body_material_s1', 'type_s1', 'pressureunit_s1'].forEach(id => {
+                //     document.getElementById(id).disabled = true;
+                // });
+
+                localStorage.setItem('loadbutton_status1', 'true');
+                localStorage.setItem('station1_pressure_data', JSON.stringify({ test_name: all_testnames, pressure: all_pressure, duration: all_duration, testid: all_testid, gauges: gauges }));
+
+                // Reset saved status when loading new data
+                station1_saved = false;
+                localStorage.setItem('station1_saved', 'false');
+
+                // NEW: Load dynamic fields configuration
+                loadDynamicFields(valve_type_id);
+
+            }).catch(e => {
+                DialogManager.closeLoading();
+                // DialogManager.toast({ type: 'error', message: "Error Loading Pressure or Duration Data" });
+                console.error(e);
+            });
+        }
+
+        /**
+         * Updates headers with the valve type name.
+         */
+        function updateDynamicHeaders(valveTypeName) {
+            if (valveTypeName) {
+                const mainHeader = document.getElementById('mainHeaderTitle');
+                if (mainHeader) mainHeader.textContent = valveTypeName + ' Test';
+                
+                const cardHeader = document.getElementById('valveDetailsHeader');
+                if (cardHeader) cardHeader.textContent = valveTypeName + ' Details';
+            }
+        }
+
+        /**
+         * Fetches and renders dynamic fields based on valve type configuration.
+         */
+        function loadDynamicFields(valveTypeId) {
+            if (!valveTypeId) return;
+            const container = document.getElementById('dynamic_fields_container_s1');
+            container.innerHTML = '<div class="col-12 py-1 text-muted small">Loading additional fields...</div>';
+
+            fetch(`/api/formdata2/get/${valveTypeId}/`)
+                .then(r => r.json())
+                .then(data => {
+                    container.innerHTML = '';
+                    if (!data.fields || data.fields.length === 0) {
+                        return;
+                    }
+
+                    data.fields.forEach(field => {
+                        renderDynamicField(field);
+                    });
+                })
+                .catch(err => {
+                    console.error("Error loading dynamic fields:", err);
+                    container.innerHTML = '<div class="col-12 text-danger small">Failed to load additional fields.</div>';
+                });
+        }
+
+        /**
+         * Renders a single dynamic field into the container.
+         */
+        function renderDynamicField(field) {
+            const container = document.getElementById('dynamic_fields_container_s1');
+            const col = document.createElement('div');
+            col.className = 'col-md-3 col-sm-6';
+            
+            // Generate label with mandatory asterisk if needed
+            const labelText = field.form_name + (field.mandatory === 'yes' ? ' <span class="text-danger">*</span>' : '');
+            
+            let inputHtml = '';
+            const fieldName = field.form_name;
+            const inputId = `dynamic_field_${field.form_data_id}`;
+            const mandatoryAttr = field.mandatory === 'yes' ? 'data-mandatory="true"' : '';
+
+            if (field.datatype === 'Date') {
+                inputHtml = `<input type="date" id="${inputId}" name="${fieldName}" class="form-control" ${mandatoryAttr}>`;
+            } else if (field.datatype === 'Number' || field.datatype === 'Integer') {
+                const stepAttr = field.datatype === 'Integer' ? 'step="1" onkeypress="return event.charCode >= 48 && event.charCode <= 57"' : 'step="any"';
+                inputHtml = `<input type="number" id="${inputId}" name="${fieldName}" class="form-control" placeholder="0" ${stepAttr} data-type="${field.datatype}" ${mandatoryAttr}>`;
+            } else if (field.datatype === 'Dropdown') {
+                inputHtml = `
+                    <select id="${inputId}" name="${fieldName}" class="form-select" ${mandatoryAttr}>
+                        <option value="">Select Option</option>
+                        <option value="Option 1">Option 1</option>
+                        <option value="Option 2">Option 2</option>
+                    </select>`;
+            } else {
+                // Default to Text
+                inputHtml = `<input type="text" id="${inputId}" name="${fieldName}" class="form-control" placeholder="-" ${mandatoryAttr}>`;
+            }
+
+            col.innerHTML = `
+                <label class="form-label">${labelText}</label>
+                ${inputHtml}
+                <div class="invalid-feedback">This field is required.</div>
+            `;
+            container.appendChild(col);
+        }
+
+        function save_station1() {
+            if (!loadbutton_status1) { DialogManager.toast({ type: 'warning', message: "Please click load button first" }); return; }
+            
+            // Look for Valve Serial No - either by ID if static, or by name if dynamic
+            let serialInput = document.getElementById('VALVE_SER_NO') || 
+                              document.querySelector('input[name="VALVE SERIAL NO"]') || 
+                              document.querySelector('input[name="VALVE_SER_NO"]');
+            
+            let serial = serialInput ? serialInput.value.trim() : "";
+
+            if (!serial) { DialogManager.toast({ type: 'warning', message: "Serial Number is Required" }); return; }
+
+            // NEW: Validation for dynamic fields (mandatory and integer)
+            let dynamicInputs = document.querySelectorAll('#dynamic_fields_container_s1 input, #dynamic_fields_container_s1 select');
+            let validationErrors = [];
+            
+            dynamicInputs.forEach(field => {
+                field.classList.remove('is-invalid');
+                const val = field.value.trim();
+                
+                // Mandatory check
+                if (field.dataset.mandatory === 'true' && val === '') {
+                    field.classList.add('is-invalid');
+                    validationErrors.push(`${field.name} is required.`);
+                }
+                
+                // Integer validation
+                if (field.dataset.type === 'Integer' && val !== '') {
+                    if (!/^\d+$/.test(val)) {
+                        field.classList.add('is-invalid');
+                        validationErrors.push(`${field.name} must be an integer.`);
+                    }
+                }
+            });
+            
+            if (validationErrors.length > 0) {
+                DialogManager.toast({ type: 'error', message: validationErrors[0] }); // Show first error
+                return;
+            }
+
+            // Check if at least one test is enabled
+            let params = {
+                testnames: all_testnames, pressure: all_pressure, duration: all_duration, testid: all_testid, disabled: disabled_testid
+            };
+
+            // Calculate active tests count
+            const totalTests = params.testid ? params.testid.length : 0;
+            const disabledTests = params.disabled ? params.disabled.length : 0;
+            const activeTests = totalTests - disabledTests;
+
+            if (activeTests === 0) {
+                DialogManager.toast({ type: 'warning', message: "Please enable at least one test to proceed" });
+                return;
+            }
+
+            let dynamicFields = [];
+            document.querySelectorAll("#station1_container input, #station1_container select")
+                .forEach(field => {
+                    if (
+                        field.name &&
+                        field.type !== 'button' &&
+                        field.name !== 'ASSEMBLY_NO_s1'   //  exclude this field
+                    ) {
+                        dynamicFields.push({ name: field.name, value: field.value });
+                    }
+                });
+
+            DialogManager.loading('Saving...', 'Please wait');
+
+            fetch('/api/newform/save_station1/', {
+                method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+                body: JSON.stringify({
+                    fields: dynamicFields, valvetype: document.getElementById('type_s1').value, station_id: 1,
+                    testname: params.testnames, test_pressure: params.pressure, test_duration: params.duration, test_id: params.testid,
+                    diabled_testid: params.disabled
+                })
+            }).then(r => r.json()).then(data => {
+                DialogManager.closeLoading();
+                if (data.status === "success") {
+                    DialogManager.toast({ type: 'success', message: "Data saved successfully" });
+                    station1_saved = true;
+                    localStorage.setItem('station1_saved', 'true');
+
+                    // Update save button to show "Saved" with checkmark
+                    const saveBtn = document.getElementById('save_btn_s1');
+                    const saveIcon = document.getElementById('save_icon_s1');
+                    const saveText = document.getElementById('save_text_s1');
+                    if (saveIcon) saveIcon.className = 'fas fa-check-circle';
+                    if (saveText) saveText.textContent = 'Saved';
+
+
+                }
+                else if (data.status === "error" && data.message) {
+                    // Reset save button to "Save" state
+                    const saveIcon = document.getElementById('save_icon_s1');
+                    const saveText = document.getElementById('save_text_s1');
+                    if (saveIcon) saveIcon.className = 'fas fa-save';
+                    if (saveText) saveText.textContent = 'Save';
+
+                    // Show duplicate serial number error with clear message
+                    DialogManager.alert({
+                        title: 'Cannot Save',
+                        message: data.message,
+                        type: 'error'
+                    });
+                }
+                else if (data.error) {
+                    // Reset save button to "Save" state
+                    const saveIcon = document.getElementById('save_icon_s1');
+                    const saveText = document.getElementById('save_text_s1');
+                    if (saveIcon) saveIcon.className = 'fas fa-save';
+                    if (saveText) saveText.textContent = 'Save';
+
+                    DialogManager.toast({ type: 'error', message: data.error });
+                }
+                else {
+                    // Reset save button to "Save" state
+                    const saveIcon = document.getElementById('save_icon_s1');
+                    const saveText = document.getElementById('save_text_s1');
+                    if (saveIcon) saveIcon.className = 'fas fa-save';
+                    if (saveText) saveText.textContent = 'Save';
+
+                    DialogManager.toast({ type: 'error', message: "Error saving data" });
+                }
+            }).catch(e => {
+                DialogManager.closeLoading();
+
+                // Reset save button to "Save" state
+                const saveIcon = document.getElementById('save_icon_s1');
+                const saveText = document.getElementById('save_text_s1');
+                if (saveIcon) saveIcon.className = 'fas fa-save';
+                if (saveText) saveText.textContent = 'Save';
+
+                DialogManager.toast({ type: 'error', message: "Failed to save data" });
+            });
+        }
+
+        function clear_station1() {
+            if (!station1_saved) {
+                // If data not saved, proceed directly
+                performClearStation1();
+            } else {
+                // If data is saved, ask for confirmation
+                DialogManager.confirm({
+                    title: 'Clear Station 1 Data?',
+                    message: 'This will clear all entered data. Are you sure?',
+                    confirmText: 'Yes, Clear',
+                    cancelText: 'Cancel',
+                    reverseButtons: true,
+                    onConfirm: () => {
+                        performClearStation1();
+                    },
+                    onCancel: () => {
+                        // User cancelled, do nothing
+                    }
+                });
+            }
+        }
+
+        function performClearStation1() {
+            // Clear Station 1 inputs
+            document.querySelectorAll("#station1_container input, #station1_container select").forEach(e => {
+                e.value = '';
+            });
+            document.getElementById("pressureTableBody").innerHTML = `<tr class="empty-state"><td colspan="4" class="text-center py-4" style="color: #94a3b8; font-style: italic;"><i class="fas fa-info-circle me-1"></i>Select testing parameters and click "Load" to view pressure and duration.</td></tr>`;
+            // document.querySelector('.degreetable').classList.add('hidden');
+            // document.querySelector(".degreetable tbody").innerHTML = "";
+
+            const tbodyInstr = document.getElementById("instrumentTableBody");
+            if (tbodyInstr) {
+                tbodyInstr.innerHTML = `<tr class="empty-state"><td colspan="4" class="text-center py-4" style="color: #94a3b8; font-style: italic;"><i class="fas fa-info-circle me-1"></i>Select testing parameters and click "Load" to view instruments.</td></tr>`;
+            }
+
+            // Clear Station 1 localStorage
+            localStorage.removeItem('station1_form');
+            localStorage.removeItem('station1_pressure_data');
+            localStorage.removeItem('station1_saved');
+            localStorage.removeItem('station1_fields_disabled'); // Clear disable flag
+            localStorage.removeItem('loadbutton_status1');
+            localStorage.removeItem('disabled_btn');
+            localStorage.removeItem('disabled_testid');
+
+            loadbutton_status1 = false;
+            station1_saved = false;
+
+            // Reset save button to "Save" state
+            const saveIcon1 = document.getElementById('save_icon_s1');
+            const saveText1 = document.getElementById('save_text_s1');
+            if (saveIcon1) saveIcon1.className = 'fas fa-save';
+            if (saveText1) saveText1.textContent = 'Save';
+
+            // Re-enable load button and testing parameters
+            document.getElementById('load_btn_s1').disabled = false;
+            ['standard_s1', 'size_s1', 'class_s1', 'body_material_s1', 'type_s1', 'pressureunit_s1'].forEach(id => {
+                document.getElementById(id).disabled = false;
+            });
+
+            // Hide green ticks and reset save buttons
+
+
+            DialogManager.loading('Clearing...', 'Please wait');
+
+            // Clear session data on server
+            let p1 = fetch('/api/newform/clear_station1/');
+
+            Promise.all([p1])
+                .then(([r1]) => {
+                    DialogManager.closeLoading();
+                    DialogManager.toast({ type: 'success', message: "Data Cleared" });
+                })
+                .catch(e => {
+                    DialogManager.closeLoading();
+                    console.error(e);
+                });
+        }
+        function cancel_station1() {
+            DialogManager.confirm({
+                title: 'Cancel Station 1?',
+                message: 'All data will be lost. Do you want to proceed?',
+                confirmText: 'Yes, Cancel',
+                cancelText: 'No',
+                reverseButtons: true,
+                onConfirm: () => {
+                    DialogManager.loading('Cancelling...', 'Please wait');
+
+                    fetch('/api/newform/cancel_station1/')
+                        .then(r => {
+                            if (!r.ok) throw new Error('Network response was not ok');
+                            return r.json();
+                        })
+                        .then(d => {
+                            DialogManager.closeLoading();
+                            if (d.status == "success") {
+                                // Clear local storage and inputs
+                                performClearStation1();
+                                // Redirect to dashboard after a small delay to ensure cleanup starts
+                                setTimeout(() => {
+                                    window.location.href = '/dashboard/';
+                                }, 100);
+                            } else {
+                                DialogManager.toast({ type: 'error', message: 'Failed to cancel: ' + (d.message || d.error || 'Unknown error') });
+                            }
+                        }).catch(e => {
+                            DialogManager.closeLoading();
+                            console.error('Cancel error:', e);
+                            DialogManager.toast({ type: 'error', message: 'Error cancelling operation: ' + e.message });
+                        });
+                },
+                onCancel: () => {
+                    // User cancelled, do nothing
+                }
+            });
+        }
+
+        function continue_station1() {
+            console.log('Continue Station 1 - Button states:', {
+                loadbutton_status1,
+                station1_saved,
+                localStorage_saved: localStorage.getItem('station1_saved')
+            });
+
+            var station1saved = station1_saved;
+
+            if (station1saved == true) {
+                DialogManager.loading('Processing...', 'Please wait');
+
+                fetch('/api/newform/continue_station1/', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken'),
+                    }
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        const contentType = response.headers.get('content-type');
+                        if (!contentType || !contentType.includes('application/json')) {
+                            throw new Error('Response is not JSON');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        DialogManager.closeLoading();
+
+                        if (data.status == "success") {
+                            console.log("Continue station received data for redirect", data);
+                            // Use the redirect_url returned by the API
+                            if (data.redirect_url) {
+                                window.location.href = data.redirect_url;
+                            } else {
+                                // Fallback to default behavior
+                                window.location.href = "/live_page";
+                            }
+                        }
+                        else if (data.status == "failure") {
+                            // Show specific error message from server
+                            DialogManager.toast({
+                                type: 'error',
+                                message: data.message || "Failed to continue. Please ensure all form data is properly saved."
+                            });
+                        }
+                        else {
+                            DialogManager.toast({ type: 'error', message: data.message || "Failed to continue" });
+                        }
+                    })
+                    .catch(error => {
+                        DialogManager.closeLoading();
+                        console.error('Error:', error);
+                        DialogManager.toast({ type: 'error', message: "An error occurred while processing your request" });
+                    });
+            }
+            else {
+                DialogManager.toast({ type: 'warning', message: "Please click save button first" });
+                return;
+            }
+        }
+
+        // --- Shared & Validation ---
+        function enable_disable(btn) {
+            let testname = btn.dataset.testname;
+            let test_id = btn.dataset.testid;
+            let buttonname = btn.textContent.trim();
+
+            if (buttonname === "Disabled") {
+                btn.textContent = "Enabled";
+                btn.classList.remove('btn-danger', 'disabled-state');
+                btn.classList.add('btn-success');
+
+                disabled_btn = disabled_btn.filter(name => name !== testname);
+                disabled_testid = disabled_testid.filter(id => id !== test_id);
+            }
+            else {
+                btn.textContent = "Disabled";
+                btn.classList.add('btn-danger', 'disabled-state');
+                btn.classList.remove('btn-success');
+
+                if (!disabled_btn.includes(testname)) disabled_btn.push(testname);
+                if (!disabled_testid.includes(test_id)) disabled_testid.push(test_id);
+            }
+
+            // Save arrays to localStorage
+            localStorage.setItem("disabled_btn", JSON.stringify(disabled_btn));
+            localStorage.setItem("disabled_testid", JSON.stringify(disabled_testid));
+
+            // Reset save button state since test configuration changed
+            resetSaveButtonState();
+        }
+
+
+
+
+
+
+        // HMI AND ABRS CONNECTION STATUS CHECKING //
+        // function get_abrs_status() {
+        //     fetch('/api/user_config/get_hmi_abrs/', {
+
+        //     })
+        //         .then(response => response.json())
+        //         .then(data => {
+
+        //             const abrsHeader = document.querySelectorAll('.card-header');
+        //             const abrsIconS1 = document.getElementById('abrs_status_icon_s1');
+
+        //             // Update ABRS status
+        //             if (data.abrs_connection == 1) {
+        //                 // Update card headers
+        //                 abrsHeader.forEach(header => {
+        //                     header.classList.remove('card-header');
+        //                     header.classList.add('abrs-online');
+        //                 });
+
+        //                 // Update status icon to connected
+        //                 if (abrsIconS1) {
+        //                     abrsIconS1.src = "{% static 'images/icons/abrs_connected.png' %}";
+        //                     abrsIconS1.title = "ABRS Connected";
+        //                     abrsIconS1.style.display = "block";
+        //                 }
+        //             } else {
+        //                 // Update status icon to disconnected
+        //                 if (abrsIconS1) {
+        //                     abrsIconS1.src = "{% static 'images/icons/abrs_disconnected.png' %}";
+        //                     abrsIconS1.title = "ABRS Disconnected";
+        //                     abrsIconS1.style.display = "block";
+        //                 }
+        //             }
+
+        //         })
+        //         .catch(error => {
+        //             console.error('Error checking connections:', error);
+        //         });
+        // }
+
+
+
+
+
+    </script>
+</body>
+
+</html>

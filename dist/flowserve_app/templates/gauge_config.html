@@ -1,0 +1,577 @@
+{% extends 'base_new.html' %}
+{% load static %}
+
+{% block header_title %}Gauge Configuration{% endblock %}
+
+{% block content %}
+<style>
+  :root {
+    --primary-blue: #0d47a1;
+    --light-blue: #e3f2fd;
+    --border-color: #e0e0e0;
+    --text-muted: #757575;
+  }
+
+  /* ===== Container ===== */
+  .config-container {
+    padding: 1.5rem;
+    background: #f8f9fa;
+    min-height: calc(100vh - 100px);
+  }
+
+  .config-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  /* ===== Header Styling ===== */
+  .config-header h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+    color: #333;
+  }
+
+  .config-header p {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin-bottom: 1.5rem;
+  }
+
+  /* ===== Toggle Items ===== */
+  .toggle-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 1rem 0;
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  .toggle-item:last-child {
+    border-bottom: none;
+  }
+
+  .toggle-info h4 {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    color: #444;
+  }
+
+  .toggle-info p {
+    font-size: 0.8125rem;
+    color: #999;
+    margin-bottom: 0;
+  }
+
+  /* ===== Switch Styling ===== */
+  .switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 22px;
+  }
+
+  .switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #e0e0e0;
+    transition: .4s;
+    border-radius: 34px;
+  }
+
+  .slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+  }
+
+  input:checked + .slider {
+    background-color: #00227a;
+  }
+
+  input:checked + .slider:before {
+    transform: translateX(22px);
+  }
+
+  /* ===== Tip Bar ===== */
+  .tip-bar {
+    background-color: #e7f3ff;
+    border: 1px solid #d0e7ff;
+    padding: 0.6rem 1rem;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+    font-size: 0.8125rem;
+    color: #0066cc;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  /* ===== Table Styling ===== */
+  .table-section {
+    margin-top: 1.5rem;
+  }
+
+  .custom-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 0.5rem;
+  }
+
+  .custom-table th {
+    background-color: #f1f3f5;
+    padding: 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #555;
+    text-transform: uppercase;
+    text-align: center;
+    border: 1px solid #dee2e6;
+  }
+
+  .custom-table td {
+    padding: 0.6rem;
+    border: 1px solid #dee2e6;
+    vertical-align: middle;
+  }
+
+  .custom-table .form-control, 
+  .custom-table .form-select {
+    border-color: #ced4da;
+    font-size: 0.875rem;
+    padding: 0.4rem;
+  }
+
+  .custom-table .form-control:focus {
+    box-shadow: none;
+    border-color: var(--primary-blue);
+  }
+
+  /* Add/Delete Buttons */
+  .btn-circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    color: white;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+
+  .btn-add { background-color: #28a745; }
+  .btn-delete { background-color: #dc3545; }
+  .btn-circle:hover { opacity: 0.85; }
+
+  /* Color Picker Styling */
+  .form-control-color {
+    max-width: 100%;
+    height: 38px;
+    padding: 0.2rem;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  .form-control-color::-webkit-color-swatch {
+    border-radius: 2px;
+    border: none;
+  }
+
+  /* Save Button Footer */
+  .footer-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 2rem;
+    padding-bottom: 2rem;
+  }
+
+  .btn-save {
+    background-color: #28a745;
+    color: white;
+    padding: 0.6rem 2rem;
+    font-weight: 600;
+    border-radius: 4px;
+    border: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+</style>
+
+<div class="config-container">
+  
+  <form id="gaugeConfigForm">
+    {% csrf_token %}
+    
+    <!-- Top Configuration Card -->
+    <div class="config-card">
+      <div class="config-header">
+        <h2>Gauge Configuration</h2>
+        <p>Manage gauge display settings and operational parameters for this station.</p>
+      </div>
+
+      <div class="toggle-list">
+        <!-- Toggle 1 -->
+        <div class="toggle-item">
+          <div class="toggle-info">
+            <h4>Gauge Range in Gauge Details</h4>
+            <p>Enable or disable gauge range in gauge details visualization.</p>
+          </div>
+          <label class="switch">
+            <input type="checkbox" name="gauge_range_visibility" id="gauge_range_visibility">
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <!-- Toggle 2 -->
+        <div class="toggle-item">
+          <div class="toggle-info">
+            <h4>Actual pressure *2</h4>
+            <p>Enable or disable actual pressure *2 visualization.</p>
+          </div>
+          <label class="switch">
+            <input type="checkbox" name="actual_pressure_2" id="actual_pressure_2">
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <!-- Toggle 3 -->
+        <div class="toggle-item">
+          <div class="toggle-info">
+            <h4>Set pressure *2</h4>
+            <p>Enable or disable set pressure *2 visualization.</p>
+          </div>
+          <label class="switch">
+            <input type="checkbox" name="set_pressure_2" id="set_pressure_2">
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <!-- Toggle 4 -->
+        <div class="toggle-item">
+          <div class="toggle-info">
+            <h4>Class Based Range</h4>
+            <p>Enable or disable class based range visualization.</p>
+          </div>
+          <label class="switch">
+            <input type="checkbox" name="class_based_range_enabled" id="class_based_range_enabled" checked onchange="toggleTableSection('classBasedSection', this.checked)">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="config-card" id="classBasedSection">
+      <div class="tip-bar">
+        <i class="fas fa-lightbulb"></i>
+        <span>Tip: Modify values directly in the table cells • Click '+' to add new rows • Click Trash to remove</span>
+      </div>
+
+      <div class="table-responsive">
+        <table class="custom-table" id="classTable">
+          <thead>
+            <tr>
+              <th style="width: 100px;">GAUGE ID</th>
+              <th>CLASS</th>
+              <th>RANGE IN BAR</th>
+              <th>RANGE IN PSI</th>
+              <th>RANGE IN KG/CM2</th>
+              <th style="width: 150px;">MEDIUM</th>
+              <th style="width: 60px;">
+                <button type="button" class="btn-circle btn-add" onclick="addRow('classTableBody')">
+                  <i class="fas fa-plus"></i>
+                </button>
+              </th>
+            </tr>
+          </thead>
+          <tbody id="classTableBody">
+            <!-- Will be populated dynamically -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Specific Ranges Section -->
+    <div class="config-card">
+      <div class="tip-bar">
+        <i class="fas fa-lightbulb"></i>
+        <span>Tip: Define up to 3 specific ranges with custom color coding for the gauge display.</span>
+      </div>
+
+      <div class="table-responsive">
+        <table class="custom-table" id="rangeTable">
+          <thead>
+            <tr>
+              <th style="width: 100px;">GAUGE ID</th>
+              <th>RANGE</th>
+              <th style="width: 150px;">COLOUR</th>
+              <th style="width: 60px;">
+                <!-- <button type="button" class="btn-circle btn-add" onclick="addRow('rangeTableBody')">
+                  <i class="fas fa-plus"></i>
+                </button> -->
+              </th>
+            </tr>
+          </thead>
+          <tbody id="rangeTableBody">
+            <!-- Will be populated dynamically -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Save Button Footer -->
+    <div class="footer-actions">
+      <button type="submit" class="btn-save shadow-sm">
+        <i class="fas fa-save"></i> SAVE
+      </button>
+    </div>
+
+  </form>
+</div>
+
+<script src="{% static 'scripts/dialog-manager.js' %}"></script>
+<script>
+  let availableValveClasses = [];
+
+  document.addEventListener('DOMContentLoaded', function() {
+    loadGaugeConfig();
+  });
+
+  function loadGaugeConfig() {
+    fetch('/api/gauge-config/load/')
+      .then(r => r.json())
+      .then(data => {
+        if (!data.success) {
+          return DialogManager.toast({ type: 'error', message: data.error });
+        }
+        
+        availableValveClasses = data.available_valve_classes || [];
+        
+        // 1. Set Toggles
+        if (data.mapping) {
+          document.getElementById('gauge_range_visibility').checked = data.mapping.gauge_details_range.status;
+          document.getElementById('actual_pressure_2').checked = data.mapping.actual_pressure_2.status;
+          document.getElementById('set_pressure_2').checked = data.mapping.set_pressure_2.status;
+          
+          const classBasedToggle = document.getElementById('class_based_range_enabled');
+          classBasedToggle.checked = data.mapping.class_based_range.status;
+          toggleTableSection('classBasedSection', classBasedToggle.checked);
+        }
+
+        // 2. Populate Class Table
+        const classTbody = document.getElementById('classTableBody');
+        classTbody.innerHTML = '';
+        let addedClassRows = 0;
+        if (data.classes_config && data.classes_config.length > 0) {
+          data.classes_config.forEach(item => {
+            addClassRow(item);
+            addedClassRows++;
+          });
+        }
+        
+        if (addedClassRows === 0) {
+          addClassRow(); // Add empty row
+        }
+
+        // 3. Populate Color Table
+        const colorTbody = document.getElementById('rangeTableBody');
+        colorTbody.innerHTML = '';
+        let addedColorRows = 0;
+        if (data.colors && data.colors.length > 0) {
+          data.colors.forEach(item => {
+            if (item && item.range) {
+              addColorRow(item);
+              addedColorRows++;
+            }
+          });
+        }
+        
+        if (addedColorRows === 0) {
+          addColorRow(); // Add at least one empty row
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        DialogManager.toast({ type: 'error', message: 'Failed to load configuration' });
+      });
+  }
+
+  function toggleTableSection(sectionId, isVisible) {
+    const el = document.getElementById(sectionId);
+    if (el) el.style.display = isVisible ? 'block' : 'none';
+  }
+
+  function addRow(tbodyId) {
+    if (tbodyId === 'classTableBody') {
+      addClassRow();
+    } else {
+      addColorRow();
+    }
+  }
+
+  function addClassRow(data = null) {
+    const tbody = document.getElementById('classTableBody');
+    const rowCount = tbody.rows.length;
+    const nextId = rowCount + 1;
+    const newRow = document.createElement('tr');
+    
+    let classOptions = `<option value="">Select Class</option>`;
+    availableValveClasses.forEach(cls => {
+      const selected = (data && data.class_name === cls) ? 'selected' : '';
+      classOptions += `<option value="${cls}" ${selected}>${cls}</option>`;
+    });
+
+    newRow.innerHTML = `
+      <td class="text-center">${nextId}</td>
+      <td>
+        <select class="form-select" name="class_name[]">
+          ${classOptions}
+        </select>
+      </td>
+      <td><input type="text" class="form-control" name="range_bar[]" value="${data ? data.range_bar : ''}"></td>
+      <td><input type="text" class="form-control" name="range_psi[]" value="${data ? data.range_psi : ''}"></td>
+      <td><input type="text" class="form-control" name="range_kgcm2[]" value="${data ? data.range_kgcm2 : ''}"></td>
+      <td>
+        <select class="form-select" name="medium[]">
+          <option value="Air" ${(data && data.medium === 'Air') ? 'selected' : ''}>Air</option>
+          <option value="Water" ${(data && data.medium === 'Water') ? 'selected' : ''}>Water</option>
+        </select>
+      </td>
+      <td class="text-center">
+        <button type="button" class="btn-circle btn-delete" onclick="removeRow(this)">
+          <i class="fas fa-trash-alt"></i>
+        </button>
+      </td>
+    `;
+    tbody.appendChild(newRow);
+    renumberRows('classTableBody');
+  }
+
+  function addColorRow(data = null) {
+    const tbody = document.getElementById('rangeTableBody');
+    const rowCount = tbody.rows.length;
+    
+    if (rowCount >= 3) {
+      DialogManager.toast({ type: 'warning', message: 'You can only add up to 3 ranges.' });
+      return;
+    }
+
+    const nextId = rowCount + 1;
+    const newRow = document.createElement('tr');
+    newRow.innerHTML = `
+      <td class="text-center">${nextId}</td>
+      <td><input type="text" class="form-control" name="range_text[]" value="${data ? data.range : ''}"></td>
+      <td class="p-2">
+        <input type="color" class="form-control form-control-color w-100" name="range_color[]" value="${data ? data.color : '#000000'}" title="Choose your color">
+      </td>
+      <td class="text-center">
+        <button type="button" class="btn-circle btn-delete" onclick="removeRow(this)">
+          <i class="fas fa-trash-alt"></i>
+        </button>
+      </td>
+    `;
+    tbody.appendChild(newRow);
+    renumberRows('rangeTableBody');
+  }
+
+  function removeRow(btn) {
+    const row = btn.closest('tr');
+    const tbody = row.parentNode;
+    const tbodyId = tbody.id;
+    row.remove();
+    renumberRows(tbodyId);
+  }
+
+  function renumberRows(tbodyId) {
+    const tbody = document.getElementById(tbodyId);
+    Array.from(tbody.rows).forEach((row, index) => {
+      row.cells[0].textContent = index + 1;
+    });
+  }
+
+  document.getElementById('gaugeConfigForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    DialogManager.loading("Saving...", "Updating gauge configurations");
+    
+    const mapping = {
+      gauge_range_visibility: document.getElementById('gauge_range_visibility').checked,
+      actual_pressure_2: document.getElementById('actual_pressure_2').checked,
+      set_pressure_2: document.getElementById('set_pressure_2').checked,
+      class_based_range_enabled: document.getElementById('class_based_range_enabled').checked
+    };
+
+    const colors = [];
+    document.querySelectorAll('#rangeTableBody tr').forEach(row => {
+      const range = row.querySelector('input[name="range_text[]"]').value;
+      const color = row.querySelector('input[name="range_color[]"]').value;
+      if (range) colors.push({ range, color });
+    });
+
+    const classes = [];
+    document.querySelectorAll('#classTableBody tr').forEach(row => {
+      const className = row.querySelector('select[name="class_name[]"]').value;
+      const rangeBar = row.querySelector('input[name="range_bar[]"]').value;
+      const rangePsi = row.querySelector('input[name="range_psi[]"]').value;
+      const rangeKgcm2 = row.querySelector('input[name="range_kgcm2[]"]').value;
+      const medium = row.querySelector('select[name="medium[]"]').value;
+      
+      if (className) {
+        classes.push({
+          class_name: className,
+          range_bar: rangeBar,
+          range_psi: rangePsi,
+          range_kgcm2: rangeKgcm2,
+          medium: medium
+        });
+      }
+    });
+
+    fetch('/api/gauge-config/save/', {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
+      },
+      body: JSON.stringify({ mapping, colors, classes })
+    })
+    .then(r => r.json())
+    .then(data => {
+      DialogManager.closeLoading();
+      if (data.success) {
+        DialogManager.toast({ type: 'success', message: data.message });
+        loadGaugeConfig();
+      } else {
+        DialogManager.toast({ type: 'error', message: data.error });
+      }
+    })
+    .catch(err => {
+      DialogManager.closeLoading();
+      console.error(err);
+      DialogManager.toast({ type: 'error', message: 'Network error' });
+    });
+  });
+</script>
+{% endblock %}
