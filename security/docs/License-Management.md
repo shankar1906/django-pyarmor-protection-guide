@@ -130,6 +130,16 @@ pyarmor licenses --expired 2027-12-31 --bind-disk "YOUR_DISK_SERIAL" devtest
 # Use for local testing
 copy licenses\devtest\license.lic dist\
 ```
+# How to Make It Even Stronger
+## Bind license to BOTH disk serial AND MAC address:
+
+```bash
+pyarmor licenses \
+  --expired 2027-12-31 \
+  --bind-disk "CLIENT_DISK_SERIAL" \
+  --bind-mac "CLIENT_MAC_ADDRESS" \
+  client001
+```
 
 ---
 
